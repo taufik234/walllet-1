@@ -6,6 +6,7 @@ import Transactions from './pages/Transactions';
 import Stats from './pages/Stats';
 import Budget from './pages/Budget';
 import Profile from './pages/Profile';
+import Wallets from './pages/Wallets';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="transactions" element={<Transactions />} />
         <Route path="stats" element={<Stats />} />
         <Route path="budget" element={<Budget />} />
+        <Route path="wallets" element={<Wallets />} />
         <Route path="profile" element={<Profile />} />
       </Route>
     </Routes>

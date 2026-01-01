@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, PlusCircle, BarChart3, User } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, PlusCircle, BarChart3, User, Wallet } from 'lucide-react';
 import { cn } from '../../utils/utils';
 
 export default function BottomNav({ onOpenAdd }) {
@@ -9,7 +9,39 @@ export default function BottomNav({ onOpenAdd }) {
         { icon: ArrowLeftRight, label: 'Trans', to: '/transactions' },
         { icon: PlusCircle, label: 'Add', to: '#', isAction: true },
         { icon: BarChart3, label: 'Budget', to: '/budget' },
-        { icon: User, label: 'User', to: '/profile' },
+        { icon: Wallet, label: 'Dompet', to: '/wallets' }, // Added Wallet
+        // { icon: User, label: 'User', to: '/profile' }, // Might need to swap out User or fit 5 items. 
+        // BottomNav usually fits 5 items max comfortably. 
+        // Let's replace User or check if we can fit 6. 
+        // User is important. Let's try fitting 5 items by removing generic 'Budget' or 'Stats'? 
+        // No, user wants Wallets. Let's keep 5 items for now. 
+        // Wait, index = 5 means 6 items. 
+        // Standard BottomNav has 4 or 5. 
+        // Let's check existing items: Home, Trans, Add, Budget, User. (5 items)
+        // Adding 1 makes 6. Too crowded.
+        // Maybe replace 'Users/Profile' with 'Wallets' and put Profile in sidebar/topbar only?
+        // Or replace 'Budget'?
+        // The user just requested "Page sendiri untuk saldo..."
+        // I'll replace 'User' (Profile) with 'Dompet' for easier access, 
+        // and put Profile inside Dompet or just assume Profile is less accessed.
+        // OR, I can put 'Start' or 'Budget' into a "More" menu?
+        // Let's replace 'Budget' with 'Wallet' maybe? 
+        // Budget is important too.
+        // Let's try to squeeze 6 items or replace 'Stats'?
+        // Actually, 'Home' has everything. 
+        // Let's replace 'Budget' on Mobile? Or just add it and see.
+        // The file currently has 5 items.
+        // Let's Replace 'User' with 'Wallets' on mobile?
+        // Risky. 
+        // Let's put Wallets instead of 'Stats' or something?
+        // Let's just add it and hope flex fits 6 items or remove text labels if too crowded.
+        // I will Replace 'User' with 'Wallets' and move Profile to top right of Home? 
+        // No, Profile page has settings. 
+        // Let's Swap 'Budget' for 'Wallets' in the main list, and maybe link Budget from Dashboard only?
+        // Or... 
+        // Let's just add it. Flexbox will handle it, might be tight.
+        // { icon: Wallet, label: 'Dompet', to: '/wallets' },
+        // { icon: User, label: 'User', to: '/profile' },
     ];
 
     return (

@@ -1,15 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useTransactions } from '../context/TransactionContext';
 import { formatCurrency, cn } from '../utils/utils';
-import { Pencil, Save, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { Pencil, AlertCircle, Plus, Trash2 } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
 import AddBudgetModal from '../components/shared/AddBudgetModal';
 
 export default function Budget() {
-    const { budgetStats, updateBudget, deleteBudget, budgets } = useTransactions();
-    const [editingCategory, setEditingCategory] = useState(null);
-    const [tempLimit, setTempLimit] = useState('');
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const { budgetStats, deleteBudget, budgets, resetBudget } = useTransactions();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editData, setEditData] = useState(null);
 
     // Calculate Global Budget Stats (Main Budget)
     const globalStats = useMemo(() => {
@@ -27,33 +26,39 @@ export default function Budget() {
         return CATEGORIES.expense.length > budgetedCats.length;
     }, [budgets]);
 
-    const handleEdit = (category, currentLimit) => {
-        setEditingCategory(category);
-        setTempLimit(new Intl.NumberFormat('id-ID').format(currentLimit));
+    const handleOpenAdd = () => {
+        setEditData(null);
+        setIsModalOpen(true);
     };
 
-    const handleLimitChange = (e) => {
-        const cleanValue = e.target.value.replace(/\D/g, '');
-        if (cleanValue) {
-            const formatted = new Intl.NumberFormat('id-ID').format(cleanValue);
-            setTempLimit(formatted);
-        } else {
-            setTempLimit('');
-        }
+    const handleOpenEdit = (category, limit) => {
+        setEditData({ category, limit });
+        setIsModalOpen(true);
     };
 
-    const handleSave = (category) => {
-        const numericLimit = Number(tempLimit.replace(/\./g, ''));
-        updateBudget(category, numericLimit);
-        setEditingCategory(null);
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditData(null);
     };
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-white">Target Anggaran</h1>
-                <div className="text-sm text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
-                    {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => {
+                            if (window.confirm('Reset progress budget bulan ini? Transaksi tidak akan dihapus, tetapi perhitungan "terpakai" akan dimulai dari nol.')) {
+                                resetBudget();
+                            }
+                        }}
+                        className="text-xs text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+                    >
+                        Reset
+                    </button>
+                    <div className="text-sm text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
+                        {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+                    </div>
                 </div>
             </div>
 
@@ -101,7 +106,7 @@ export default function Budget() {
                     <h2 className="text-lg font-bold text-white">Rincian Per Kategori</h2>
                     {canAddMore && (
                         <button
-                            onClick={() => setIsAddModalOpen(true)}
+                            onClick={handleOpenAdd}
                             className="flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
                         >
                             <Plus className="w-4 h-4" />
@@ -124,38 +129,25 @@ export default function Budget() {
                                     </p>
                                 </div>
 
-                                <div className="text-right flex items-start gap-4">
-                                    {editingCategory === item.category ? (
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                inputMode="numeric"
-                                                value={tempLimit}
-                                                onChange={handleLimitChange}
-                                                className="w-28 sm:w-36 bg-slate-950 border border-indigo-500 rounded-lg px-2 py-1 text-right text-white focus:outline-none font-medium"
-                                                autoFocus
-                                            />
-                                            <button onClick={() => handleSave(item.category)} className="p-2 bg-indigo-500 rounded-lg text-white">
-                                                <Save className="w-4 h-4" />
-                                            </button>
+                                <div className="text-right flex items-start gap-3">
+                                    <div className="flex flex-col items-end">
+                                        <div
+                                            className="group flex items-center gap-2 justify-end cursor-pointer"
+                                            onClick={() => handleOpenEdit(item.category, item.limit)}
+                                        >
+                                            <span className="text-slate-400 text-sm">Target:</span>
+                                            <span className="font-bold text-white group-hover:text-indigo-400 transition-colors">{formatCurrency(item.limit)}</span>
+                                            <Pencil className="w-3 h-3 text-slate-600 group-hover:text-indigo-400 transition-all" />
                                         </div>
-                                    ) : (
-                                        <div className="flex flex-col items-end">
-                                            <div className="group flex items-center gap-2 justify-end cursor-pointer" onClick={() => handleEdit(item.category, item.limit)}>
-                                                <span className="text-slate-400 text-sm">Target:</span>
-                                                <span className="font-bold text-white group-hover:text-indigo-400 transition-colors">{formatCurrency(item.limit)}</span>
-                                                <Pencil className="w-3 h-3 text-slate-600 group-hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all" />
-                                            </div>
-                                            <p className={cn("text-xs mt-1", item.remaining < 0 ? "text-rose-400" : "text-emerald-400")}>
-                                                {item.remaining < 0 ? `Over: ${formatCurrency(Math.abs(item.remaining))}` : `Sisa: ${formatCurrency(item.remaining)}`}
-                                            </p>
-                                        </div>
-                                    )}
+                                        <p className={cn("text-xs mt-1", item.remaining < 0 ? "text-rose-400" : "text-emerald-400")}>
+                                            {item.remaining < 0 ? `Over: ${formatCurrency(Math.abs(item.remaining))}` : `Sisa: ${formatCurrency(item.remaining)}`}
+                                        </p>
+                                    </div>
 
-                                    {/* Delete Button */}
+                                    {/* Delete Button (Always Visible) */}
                                     <button
                                         onClick={() => deleteBudget(item.category)}
-                                        className="p-2 hover:bg-rose-500/10 text-slate-600 hover:text-rose-500 rounded-lg transition-colors opacity-0 group-hover/card:opacity-100"
+                                        className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg transition-colors"
                                         title="Hapus Budget"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -182,7 +174,7 @@ export default function Budget() {
                     <div className="text-center py-10 text-slate-500 border border-dashed border-slate-800 rounded-xl">
                         <p className="mb-2">Belum ada target anggaran.</p>
                         <button
-                            onClick={() => setIsAddModalOpen(true)}
+                            onClick={handleOpenAdd}
                             className="text-indigo-400 hover:underline"
                         >
                             Buat sekarang
@@ -192,8 +184,9 @@ export default function Budget() {
             </div>
 
             <AddBudgetModal
-                isOpen={isAddModalOpen}
-                onClose={() => setIsAddModalOpen(false)}
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                editData={editData}
             />
         </div>
     );

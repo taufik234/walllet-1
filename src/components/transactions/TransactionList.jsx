@@ -1,7 +1,8 @@
-import React from 'react';
+import { useState } from 'react';
 import { useTransactions } from '../../context/TransactionContext';
 import { cn, formatCurrency, formatDate } from '../../utils/utils';
 import { Wallet, ShoppingBag, Utensils, Car, Film, Gift, TrendingUp, MoreHorizontal, Trash2, Pencil } from 'lucide-react';
+import TransactionDetailModal from './TransactionDetailModal';
 
 // Helper to get icon (duplicated for now, could be shared)
 const getIcon = (category) => {
@@ -18,12 +19,28 @@ const getIcon = (category) => {
 };
 
 export default function TransactionList() {
-    const { groupedTransactions, deleteTransaction, openModal } = useTransactions();
+    const { filteredTransactions, deleteTransaction, openModal } = useTransactions();
+    const [viewTransaction, setViewTransaction] = useState(null);
+    const [visibleCount, setVisibleCount] = useState(10); // Show 10 items initially
+
+    // 1. Slice transactions for pagination
+    const visibleTransactions = filteredTransactions.slice(0, visibleCount);
+    const hasMore = visibleCount < filteredTransactions.length;
+
+    // 2. Group transactions by date (Locally)
+    const groupedTransactions = visibleTransactions.reduce((groups, transaction) => {
+        const date = transaction.date;
+        if (!groups[date]) {
+            groups[date] = [];
+        }
+        groups[date].push(transaction);
+        return groups;
+    }, {});
 
     // Sort dates descending
     const sortedDates = Object.keys(groupedTransactions).sort((a, b) => new Date(b) - new Date(a));
 
-    if (sortedDates.length === 0) {
+    if (filteredTransactions.length === 0) {
         return (
             <div className="text-center py-20 text-slate-500">
                 <p className="mb-2">Belum ada transaksi</p>
@@ -32,8 +49,12 @@ export default function TransactionList() {
         );
     }
 
+    const handleLoadMore = () => {
+        setVisibleCount(prev => prev + 10);
+    };
+
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-8">
             {sortedDates.map((date) => {
                 const dayTransactions = groupedTransactions[date];
                 const isToday = date === new Date().toISOString().split('T')[0];
@@ -43,14 +64,18 @@ export default function TransactionList() {
 
                 return (
                     <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <h3 className="text-sm font-bold text-slate-400 mb-3 sticky top-0 bg-slate-950/90 backdrop-blur py-2 z-10">
+                        <h3 className="text-sm font-bold text-slate-400 mb-3 sticky top-0 bg-slate-950/90 backdrop-blur py-2 z-10 w-full">
                             {displayDate}
                         </h3>
                         <div className="space-y-3">
                             {dayTransactions.map((trx) => {
                                 const Icon = getIcon(trx.category);
                                 return (
-                                    <div key={trx.id} className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center gap-4 hover:border-slate-700 transition-colors group relative overflow-hidden">
+                                    <div
+                                        key={trx.id}
+                                        onClick={() => setViewTransaction(trx)}
+                                        className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center gap-4 hover:border-indigo-500/30 hover:bg-slate-800/50 transition-all cursor-pointer group relative overflow-hidden active:scale-[0.98]"
+                                    >
                                         <div className={cn(
                                             "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
                                             trx.type === 'income' ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
@@ -62,6 +87,8 @@ export default function TransactionList() {
                                             <p className="text-white font-medium capitalize truncate pr-8">{trx.note || trx.category}</p>
                                             <p className="text-xs text-slate-500 flex items-center gap-1">
                                                 <span className="capitalize">{trx.category}</span>
+                                                <span className="text-slate-600">•</span>
+                                                <span className="capitalize">{trx.wallet || 'Tunai'}</span>
                                             </p>
                                         </div>
 
@@ -71,24 +98,6 @@ export default function TransactionList() {
                                         )}>
                                             {trx.type === 'income' ? '+' : '-'} {formatCurrency(trx.amount)}
                                         </div>
-
-                                        {/* Actions (Visible on Hover/Focus) */}
-                                        <div className="absolute right-0 top-0 bottom-0 flex items-center gap-1 bg-gradient-to-l from-slate-950 via-slate-950/90 to-transparent pl-8 pr-4 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                                            <button
-                                                onClick={() => openModal(trx)}
-                                                className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-indigo-400 transition-colors"
-                                                aria-label="Edit transaction"
-                                            >
-                                                <Pencil className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => deleteTransaction(trx.id)}
-                                                className="p-2 rounded-full hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-colors"
-                                                aria-label="Delete transaction"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
                                     </div>
                                 );
                             })}
@@ -96,6 +105,21 @@ export default function TransactionList() {
                     </div>
                 );
             })}
+
+            {hasMore && (
+                <button
+                    onClick={handleLoadMore}
+                    className="w-full py-3 text-sm font-medium text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all"
+                >
+                    Muat Lebih Banyak...
+                </button>
+            )}
+
+            <TransactionDetailModal
+                isOpen={!!viewTransaction}
+                onClose={() => setViewTransaction(null)}
+                transaction={viewTransaction}
+            />
         </div>
     );
 }

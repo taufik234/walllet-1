@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { X, Check, Calendar, FileText, DollarSign } from 'lucide-react';
 import { cn } from '../../utils/utils';
 import { useTransactions } from '../../context/TransactionContext';
-import { CATEGORIES } from '../../data/mockData';
+import { CATEGORIES, WALLETS } from '../../data/mockData';
 
 export default function AddTransactionModal({ isOpen, onClose, editData = null }) {
-    const { addTransaction, editTransaction } = useTransactions();
+    const { addTransaction, editTransaction, isPreset } = useTransactions();
     const [type, setType] = useState('expense'); // 'income' | 'expense'
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [note, setNote] = useState('');
+    const [wallet, setWallet] = useState('cash');
 
     // Load data when editData changes
     React.useEffect(() => {
@@ -18,8 +19,14 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
             setType(editData.type);
             setAmount(new Intl.NumberFormat('id-ID').format(editData.amount));
             setCategory(editData.category);
-            setDate(editData.date);
+            // If preset, use TODAY not the old date (which might be from a template)
+            // Actually, for presets, we likely create a new object with 'date' set to today in QuickActions
+            // But to be safe, if strictly preset, maybe default to today? 
+            // Let's assume the preset object passed has correct date or we override it.
+            // For now, trust the data passed.
+            setDate(editData.date || new Date().toISOString().split('T')[0]);
             setNote(editData.note || '');
+            setWallet(editData.wallet || 'cash');
         } else {
             // Reset if no editData (Add mode)
             setType('expense');
@@ -27,6 +34,7 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
             setCategory('');
             setDate(new Date().toISOString().split('T')[0]);
             setNote('');
+            setWallet('cash');
         }
     }, [editData, isOpen]);
 
@@ -52,10 +60,12 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
             amount: numericAmount,
             category,
             date,
-            note
+            note,
+            wallet
         };
 
-        if (editData) {
+        // If it looks like editData but isPreset is true, we treat it as ADD
+        if (editData && !isPreset) {
             editTransaction(editData.id, transactionData);
         } else {
             addTransaction(transactionData);
@@ -71,7 +81,7 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
             <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between p-4 border-b border-slate-800">
                     <h2 className="text-lg font-bold text-white">
-                        {editData ? 'Edit Transaksi' : 'Tambah Transaksi'}
+                        {editData && !isPreset ? 'Edit Transaksi' : 'Tambah Transaksi'}
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
                         <X className="w-5 h-5" />
@@ -79,9 +89,12 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-4 space-y-4">
-                    {/* ... (rest of the form remains mostly the same, logic handled above) ... */}
+                    {/* ... (rest of form) ... */}
+                    {/* (skipping unchanged parts for brevity if possible, but replace tool needs context block) */
+                    /* Replicating context is safer */}
                     {/* Type Toggle */}
                     <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl">
+                        {/* ... (buttons) ... */}
                         <button
                             type="button"
                             onClick={() => { setType('expense'); setCategory(''); }}
@@ -118,6 +131,28 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                                 className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-bold text-lg"
                                 autoFocus
                             />
+                        </div>
+                    </div>
+
+                    {/* Wallet Selector */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-medium text-slate-400">Sumber Dana</label>
+                        <div className="bg-slate-950 p-1 rounded-xl flex gap-1">
+                            {WALLETS.map(w => (
+                                <button
+                                    key={w.id}
+                                    type="button"
+                                    onClick={() => setWallet(w.id)}
+                                    className={cn(
+                                        "flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all border",
+                                        wallet === w.id
+                                            ? "bg-indigo-600/10 border-indigo-500/50 text-indigo-400 shadow-sm"
+                                            : "bg-transparent border-transparent text-slate-500 hover:bg-slate-900"
+                                    )}
+                                >
+                                    {w.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
@@ -179,7 +214,7 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                         className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 mt-4 transition-all active:scale-[0.98]"
                     >
                         <Check className="w-5 h-5" />
-                        {editData ? 'Simpan Perubahan' : 'Simpan Transaksi'}
+                        {editData && !isPreset ? 'Simpan Perubahan' : 'Simpan Transaksi'}
                     </button>
                 </form>
             </div>

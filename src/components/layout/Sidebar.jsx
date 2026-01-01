@@ -12,6 +12,7 @@ export default function Sidebar({ onOpenAdd }) {
         { icon: ArrowLeftRight, label: 'Transaksi', to: '/transactions' },
         { icon: BarChart3, label: 'Statistik', to: '/stats' },
         { icon: PieChart, label: 'Budget', to: '/budget' },
+        { icon: Wallet, label: 'Dompet', to: '/wallets' },
         { icon: User, label: 'Profile', to: '/profile' },
     ];
 

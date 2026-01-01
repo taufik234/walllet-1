@@ -1,26 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Check } from 'lucide-react';
 import { cn } from '../../utils/utils';
 import { useTransactions } from '../../context/TransactionContext';
 import { CATEGORIES } from '../../data/mockData';
 
-export default function AddBudgetModal({ isOpen, onClose }) {
+export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
     const { updateBudget, budgets } = useTransactions();
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
 
-    // Reset when opening
-    React.useEffect(() => {
+    // Reset or Load Data when opening
+    useEffect(() => {
         if (isOpen) {
-            setAmount('');
-            setCategory('');
+            if (editData) {
+                // Edit Mode
+                setCategory(editData.category);
+                setAmount(new Intl.NumberFormat('id-ID').format(editData.limit));
+            } else {
+                // Add Mode
+                setAmount('');
+                setCategory('');
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, editData]);
 
     if (!isOpen) return null;
 
-    // Filter categories that don't have a budget yet
-    const availableCategories = CATEGORIES.expense.filter(c => !budgets[c.id]);
+    // Filter categories that don't have a budget yet (for Add mode)
+    // For Edit mode, we must allow the current category even if it exists
+    const availableCategories = CATEGORIES.expense.filter(c =>
+        !budgets[c.id] || (editData && c.id === editData.category)
+    );
 
     const handleAmountChange = (e) => {
         const cleanValue = e.target.value.replace(/\D/g, '');
@@ -46,7 +56,7 @@ export default function AddBudgetModal({ isOpen, onClose }) {
             <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between p-4 border-b border-slate-800">
                     <h2 className="text-lg font-bold text-white">
-                        Tambah Target Budget
+                        {editData ? 'Edit Target Budget' : 'Tambah Target Budget'}
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
                         <X className="w-5 h-5" />
@@ -80,12 +90,14 @@ export default function AddBudgetModal({ isOpen, onClose }) {
                                     <button
                                         key={cat.id}
                                         type="button"
-                                        onClick={() => setCategory(cat.id)}
+                                        onClick={() => !editData && setCategory(cat.id)}
+                                        disabled={!!editData} // Disable category selection in Edit mode
                                         className={cn(
                                             "flex flex-col items-center justify-center p-2 rounded-xl gap-1 transition-all border",
                                             category === cat.id
                                                 ? "bg-indigo-600/10 border-indigo-600/50 text-indigo-400"
-                                                : "bg-slate-950 border-slate-800 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+                                                : "bg-slate-950 border-slate-800 text-slate-500 hover:bg-slate-800 hover:text-slate-300",
+                                            editData && category !== cat.id && "opacity-50 cursor-not-allowed"
                                         )}
                                     >
                                         <span className="text-[10px] uppercase font-bold tracking-wider">{cat.label}</span>
@@ -97,6 +109,11 @@ export default function AddBudgetModal({ isOpen, onClose }) {
                                 </div>
                             )}
                         </div>
+                        {editData && (
+                            <p className="text-xs text-slate-500 italic text-center mt-2">
+                                Kategori tidak dapat diubah saat edit.
+                            </p>
+                        )}
                     </div>
 
                     {/* Actions */}
