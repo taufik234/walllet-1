@@ -23,25 +23,17 @@ export default function Dashboard() {
                 <div className="w-10"></div> {/* Spacer for balance */}
             </div>
 
-            {/* Desktop Grid for Charts & Stats */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-                {/* Left Column (Main Stats) */}
-                <div className="lg:col-span-2 space-y-6">
-                    <BalanceCard />
-                    <QuickActions />
-                    <WalletCards />
-                    <BudgetSummary />
-                    <SpendingChart />
-                </div>
-
-                {/* Right Column (Secondary Stats) - Formerly RecentTransactions, now maybe shortcuts or summary? 
-                    Actually, if RecentTransactions goes to bottom, what stays here?
-                    SummaryCards & StatsShortcut?
-                */}
-                <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+                <BalanceCard />
+                <QuickActions />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <StatsShortcut />
                     <SummaryCards />
-                    {/* We can put other small widgets here if needed, or just let the left col take more space */}
+                </div>
+                <WalletCards />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <BudgetSummary />
+                    <SpendingChart />
                 </div>
             </div>
 
