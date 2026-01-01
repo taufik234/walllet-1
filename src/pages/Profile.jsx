@@ -3,22 +3,8 @@ import { User, Settings, LogOut, Download, Upload, Trash2, Moon, Sun, AlertTrian
 import { useTransactions } from '../context/TransactionContext';
 
 export default function Profile() {
-    const { transactions } = useTransactions();
-    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
-
-    useEffect(() => {
-        const root = window.document.documentElement;
-        if (theme === 'dark') {
-            root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
-        }
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-    };
+    const { transactions, theme, toggleTheme, resetBudget } = useTransactions();
+    // Removed local theme state
 
     const handleExport = () => {
         if (!transactions || transactions.length === 0) {
@@ -106,29 +92,29 @@ export default function Profile() {
             {/* Data Management */}
             <div className="space-y-2">
                 <h3 className="text-xs font-bold text-slate-500 px-2 uppercase tracking-wider">Manajemen Data</h3>
-                <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden divide-y divide-slate-800">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 shadow-sm">
 
                     {/* Export */}
                     <button
                         onClick={handleExport}
-                        className="w-full p-4 flex items-center gap-3 hover:bg-slate-800 transition-colors text-left group"
+                        className="w-full p-4 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
                     >
-                        <div className="p-2 bg-slate-800 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors text-slate-400">
+                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg group-hover:bg-emerald-500/10 dark:group-hover:bg-emerald-600 group-hover:text-emerald-600 dark:group-hover:text-white transition-colors text-slate-500 dark:text-slate-400">
                             <Download className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                            <span className="text-slate-200 font-medium block">Backup Data (JSON)</span>
+                            <span className="text-slate-900 dark:text-slate-200 font-medium block">Backup Data (JSON)</span>
                             <span className="text-xs text-slate-500">Download data transaksi ke file JSON</span>
                         </div>
                     </button>
 
                     {/* Import */}
-                    <label className="w-full p-4 flex items-center gap-3 hover:bg-slate-800 transition-colors text-left group cursor-pointer">
-                        <div className="p-2 bg-slate-800 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors text-slate-400">
+                    <label className="w-full p-4 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group cursor-pointer">
+                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg group-hover:bg-blue-500/10 dark:group-hover:bg-blue-600 group-hover:text-blue-600 dark:group-hover:text-white transition-colors text-slate-500 dark:text-slate-400">
                             <Upload className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                            <span className="text-slate-200 font-medium block">Restore Data</span>
+                            <span className="text-slate-900 dark:text-slate-200 font-medium block">Restore Data</span>
                             <span className="text-xs text-slate-500">Upload file JSON backup</span>
                         </div>
                         <input type="file" accept=".json" onChange={handleImport} className="hidden" />

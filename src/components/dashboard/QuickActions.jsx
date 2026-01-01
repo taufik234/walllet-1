@@ -46,7 +46,7 @@ export default function QuickActions() {
 
     return (
         <div>
-            <h3 className="text-sm font-semibold text-slate-400 mb-3 px-1">Aksi Cepat</h3>
+            <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3 px-1">Aksi Cepat</h3>
             <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
                 {actions.map((action, idx) => {
                     const Icon = action.icon;
@@ -54,7 +54,7 @@ export default function QuickActions() {
                         <button
                             key={idx}
                             onClick={() => handleAction(action.data)}
-                            className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all active:scale-95 whitespace-nowrap ${action.color}`}
+                            className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all active:scale-95 whitespace-nowrap bg-white dark:bg-transparent shadow-sm dark:shadow-none ${action.color}`}
                         >
                             <Icon className="w-4 h-4" />
                             <span className="text-sm font-medium">{action.label}</span>

@@ -52,27 +52,27 @@ export default function AdjustBalanceModal({ isOpen, onClose, walletId, currentB
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-4 border-b border-slate-800">
-                    <h2 className="text-lg font-bold text-white">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-colors">
+                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                         Atur Saldo {walletLabel}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-slate-900 dark:hover:text-white">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-400">Saldo Saat Ini (Rp)</label>
+                        <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Saldo Saat Ini (Rp)</label>
                         <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">Rp</span>
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">Rp</span>
                             <input
                                 type="text"
                                 inputMode="numeric"
                                 value={amount}
                                 onChange={handleAmountChange}
-                                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-4 pl-12 pr-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-bold text-2xl"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-bold text-2xl"
                                 autoFocus
                             />
                         </div>

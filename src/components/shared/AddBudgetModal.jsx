@@ -53,12 +53,12 @@ export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-4 border-b border-slate-800">
-                    <h2 className="text-lg font-bold text-white">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-colors">
+                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                         {editData ? 'Edit Target Budget' : 'Tambah Target Budget'}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-slate-900 dark:hover:text-white">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -66,16 +66,16 @@ export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
                 <form onSubmit={handleSubmit} className="p-4 space-y-6">
                     {/* Amount */}
                     <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-400">Target Anggaran (Rp)</label>
+                        <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Target Anggaran (Rp)</label>
                         <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">Rp</span>
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">Rp</span>
                             <input
                                 type="text"
                                 inputMode="numeric"
                                 value={amount}
                                 onChange={handleAmountChange}
                                 placeholder="0"
-                                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-bold text-lg"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-bold text-lg"
                                 autoFocus
                             />
                         </div>
@@ -83,7 +83,7 @@ export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
 
                     {/* Categories Grid */}
                     <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-400">Pilih Kategori</label>
+                        <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Pilih Kategori</label>
                         <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                             {availableCategories.length > 0 ? (
                                 availableCategories.map((cat) => (
@@ -95,8 +95,8 @@ export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
                                         className={cn(
                                             "flex flex-col items-center justify-center p-2 rounded-xl gap-1 transition-all border",
                                             category === cat.id
-                                                ? "bg-indigo-600/10 border-indigo-600/50 text-indigo-400"
-                                                : "bg-slate-950 border-slate-800 text-slate-500 hover:bg-slate-800 hover:text-slate-300",
+                                                ? "bg-indigo-50 dark:bg-indigo-600/10 border-indigo-200 dark:border-indigo-600/50 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                                                : "bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-300",
                                             editData && category !== cat.id && "opacity-50 cursor-not-allowed"
                                         )}
                                     >

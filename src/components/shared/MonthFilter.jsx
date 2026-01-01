@@ -32,12 +32,12 @@ export default function DateFilter({ value, onChange }) {
         <select
             value={val}
             onChange={(e) => handleChange(field, e.target.value)}
-            className="appearance-none bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl py-2 px-4 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all cursor-pointer text-center font-medium placeholder-slate-500"
-            style={{ width: field === 'year' ? '80px' : field === 'month' ? '110px' : '64px' }}
+            className="appearance-none bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg py-1 px-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-center font-medium placeholder-slate-500 transition-colors cursor-pointer"
+            style={{ width: field === 'year' ? '70px' : field === 'month' ? '100px' : '50px' }}
         >
             <option value="">{placeholder}</option>
             {options.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {opt.label}
                 </option>
             ))}
@@ -45,13 +45,15 @@ export default function DateFilter({ value, onChange }) {
     );
 
     return (
-        <div className="flex items-center gap-2 bg-slate-900/50 p-1 rounded-2xl border border-slate-800/50">
-            <div className="pl-2 pr-1 text-slate-500">
+        <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">
+            <div className="pl-2 pr-1 text-slate-400 dark:text-slate-500">
                 <Calendar className="w-4 h-4" />
             </div>
 
             <Select options={days} val={value.day} field="day" placeholder="Tgl" />
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-800"></div>
             <Select options={months} val={value.month} field="month" placeholder="Bulan" />
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-800"></div>
             <Select options={years} val={value.year} field="year" placeholder="Thn" />
         </div>
     );

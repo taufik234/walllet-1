@@ -13,7 +13,7 @@ export default function WalletFilter({ value, onChange }) {
     ];
 
     return (
-        <div className="flex bg-slate-900/50 p-1 rounded-2xl border border-slate-800/50 overflow-x-auto no-scrollbar">
+        <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1 rounded-2xl border border-slate-200 dark:border-slate-800/50 overflow-x-auto no-scrollbar">
             {options.map((opt) => {
                 const Icon = opt.icon;
                 const isActive = value === opt.id;
@@ -25,11 +25,11 @@ export default function WalletFilter({ value, onChange }) {
                         className={cn(
                             "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap",
                             isActive
-                                ? "bg-indigo-500/10 text-indigo-400 ring-1 ring-indigo-500/50 shadow-[0_0_10px_rgba(99,102,241,0.1)]"
-                                : "text-slate-400 hover:text-slate-200 hover:bg-white/5"
+                                ? "bg-white dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-sm dark:shadow-[0_0_10px_rgba(99,102,241,0.1)] ring-1 ring-slate-200 dark:ring-indigo-500/50"
+                                : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-white/5"
                         )}
                     >
-                        <Icon className={cn("w-3.5 h-3.5", isActive ? "text-indigo-400" : "text-slate-500")} />
+                        <Icon className={cn("w-3.5 h-3.5", isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-500 dark:text-slate-500")} />
                         <span>{opt.label}</span>
                     </button>
                 );

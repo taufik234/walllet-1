@@ -78,29 +78,25 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-4 border-b border-slate-800">
-                    <h2 className="text-lg font-bold text-white">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-colors">
+                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                         {editData && !isPreset ? 'Edit Transaksi' : 'Tambah Transaksi'}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-4 space-y-4">
-                    {/* ... (rest of form) ... */}
-                    {/* (skipping unchanged parts for brevity if possible, but replace tool needs context block) */
-                    /* Replicating context is safer */}
                     {/* Type Toggle */}
-                    <div className="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-xl">
-                        {/* ... (buttons) ... */}
+                    <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-xl">
                         <button
                             type="button"
                             onClick={() => { setType('expense'); setCategory(''); }}
                             className={cn(
                                 "py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200",
-                                type === 'expense' ? "bg-slate-800 text-rose-400 shadow-sm" : "text-slate-500 hover:text-slate-300"
+                                type === 'expense' ? "bg-white dark:bg-slate-800 text-rose-500 dark:text-rose-400 shadow-sm" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-300"
                             )}
                         >
                             Pengeluaran
@@ -110,7 +106,7 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                             onClick={() => { setType('income'); setCategory(''); }}
                             className={cn(
                                 "py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200",
-                                type === 'income' ? "bg-slate-800 text-emerald-400 shadow-sm" : "text-slate-500 hover:text-slate-300"
+                                type === 'income' ? "bg-white dark:bg-slate-800 text-emerald-500 dark:text-emerald-400 shadow-sm" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-300"
                             )}
                         >
                             Pemasukan
@@ -119,7 +115,7 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
 
                     {/* Amount */}
                     <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-400">Jumlah (Rp)</label>
+                        <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Jumlah (Rp)</label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">Rp</span>
                             <input
@@ -128,7 +124,7 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                                 value={amount}
                                 onChange={handleAmountChange}
                                 placeholder="0"
-                                className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-bold text-lg"
+                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-bold text-lg"
                                 autoFocus
                             />
                         </div>
@@ -136,8 +132,8 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
 
                     {/* Wallet Selector */}
                     <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-400">Sumber Dana</label>
-                        <div className="bg-slate-950 p-1 rounded-xl flex gap-1">
+                        <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Sumber Dana</label>
+                        <div className="bg-slate-100 dark:bg-slate-950 p-1 rounded-xl flex gap-1">
                             {WALLETS.map(w => (
                                 <button
                                     key={w.id}
@@ -146,8 +142,8 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                                     className={cn(
                                         "flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all border",
                                         wallet === w.id
-                                            ? "bg-indigo-600/10 border-indigo-500/50 text-indigo-400 shadow-sm"
-                                            : "bg-transparent border-transparent text-slate-500 hover:bg-slate-900"
+                                            ? "bg-white dark:bg-indigo-600/10 border-indigo-500 dark:border-indigo-500/50 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                                            : "bg-transparent border-transparent text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-900"
                                     )}
                                 >
                                     {w.label}
@@ -158,7 +154,7 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
 
                     {/* Categories Grid */}
                     <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-400">Kategori</label>
+                        <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Kategori</label>
                         <div className="grid grid-cols-4 gap-2">
                             {currentCategories.map((cat) => (
                                 <button
@@ -168,8 +164,8 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                                     className={cn(
                                         "flex flex-col items-center justify-center p-2 rounded-xl gap-1 transition-all border",
                                         category === cat.id
-                                            ? "bg-indigo-600/10 border-indigo-600/50 text-indigo-400"
-                                            : "bg-slate-950 border-slate-800 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+                                            ? "bg-white dark:bg-indigo-600/10 border-indigo-500 dark:border-indigo-600/50 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                                            : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
                                     )}
                                 >
                                     <span className="text-[10px] uppercase font-bold tracking-wider">{cat.label}</span>
@@ -181,19 +177,19 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                     {/* Date & Note */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-xs font-medium text-slate-400">Tanggal</label>
+                            <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Tanggal</label>
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input
                                     type="date"
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
-                                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-10 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2 pl-10 pr-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-medium text-slate-400">Catatan</label>
+                            <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Catatan</label>
                             <div className="relative">
                                 <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                                 <input
@@ -201,7 +197,7 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
                                     placeholder="Opsional"
-                                    className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-10 pr-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2 pl-10 pr-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                                 />
                             </div>
                         </div>

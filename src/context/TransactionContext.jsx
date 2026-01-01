@@ -12,6 +12,23 @@ export const useTransactions = () => {
 };
 
 export const TransactionProvider = ({ children }) => {
+    // Theme State (Default to Dark)
+    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+
+    React.useEffect(() => {
+        const root = window.document.documentElement;
+        if (theme === 'dark') {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    };
+
     // Transaction State
     const [transactions, setTransactions] = useState(initialTransactions);
 
@@ -264,7 +281,11 @@ export const TransactionProvider = ({ children }) => {
         editingTransaction,
         isPreset, // Export this
         openModal,
-        closeModal
+        closeModal,
+
+        // Theme
+        theme,
+        toggleTheme
     };
 
     return (

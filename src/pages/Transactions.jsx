@@ -13,7 +13,7 @@ export default function Transactions() {
         <div className="space-y-6">
             {/* Header Section */}
             <div className="flex flex-col gap-4">
-                <h1 className="text-2xl font-bold text-white">Riwayat Transaksi</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Riwayat Transaksi</h1>
 
                 {/* Type Filter (Tabs Style) */}
                 <div className="self-start flex flex-col gap-2 w-full md:w-auto">

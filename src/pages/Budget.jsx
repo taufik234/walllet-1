@@ -42,9 +42,9 @@ export default function Budget() {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-500 pb-24">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-white">Target Anggaran</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Target Anggaran</h1>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => {
@@ -52,11 +52,11 @@ export default function Budget() {
                                 resetBudget();
                             }
                         }}
-                        className="text-xs text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+                        className="text-xs text-rose-500 dark:text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
                     >
                         Reset
                     </button>
-                    <div className="text-sm text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
+                    <div className="text-sm text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">
                         {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
                     </div>
                 </div>
@@ -103,11 +103,11 @@ export default function Budget() {
             {/* Sub-Budgets List */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-white">Rincian Per Kategori</h2>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Rincian Per Kategori</h2>
                     {canAddMore && (
                         <button
                             onClick={handleOpenAdd}
-                            className="flex items-center gap-1 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+                            className="flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors"
                         >
                             <Plus className="w-4 h-4" />
                             Tambah Budget
@@ -117,15 +117,15 @@ export default function Budget() {
 
                 <div className="grid gap-4">
                     {budgetStats.map((item) => (
-                        <div key={item.category} className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all group/card">
+                        <div key={item.category} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-indigo-500/30 dark:hover:border-slate-700 transition-all group/card shadow-sm dark:shadow-none">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-white capitalize flex items-center gap-2">
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white capitalize flex items-center gap-2">
                                         {item.category}
                                         {item.isOver && <AlertCircle className="w-5 h-5 text-rose-500" />}
                                     </h3>
-                                    <p className="text-slate-400 text-sm mt-1">
-                                        Terpakai: <span className={item.isOver ? 'text-rose-400 font-bold' : 'text-slate-200'}>{formatCurrency(item.spent)}</span>
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                                        Terpakai: <span className={item.isOver ? 'text-rose-500 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-200'}>{formatCurrency(item.spent)}</span>
                                     </p>
                                 </div>
 
@@ -135,11 +135,11 @@ export default function Budget() {
                                             className="group flex items-center gap-2 justify-end cursor-pointer"
                                             onClick={() => handleOpenEdit(item.category, item.limit)}
                                         >
-                                            <span className="text-slate-400 text-sm">Target:</span>
-                                            <span className="font-bold text-white group-hover:text-indigo-400 transition-colors">{formatCurrency(item.limit)}</span>
-                                            <Pencil className="w-3 h-3 text-slate-600 group-hover:text-indigo-400 transition-all" />
+                                            <span className="text-slate-500 dark:text-slate-400 text-sm">Target:</span>
+                                            <span className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors">{formatCurrency(item.limit)}</span>
+                                            <Pencil className="w-3 h-3 text-slate-400 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-all" />
                                         </div>
-                                        <p className={cn("text-xs mt-1", item.remaining < 0 ? "text-rose-400" : "text-emerald-400")}>
+                                        <p className={cn("text-xs mt-1", item.remaining < 0 ? "text-rose-500 dark:text-rose-400" : "text-emerald-500 dark:text-emerald-400")}>
                                             {item.remaining < 0 ? `Over: ${formatCurrency(Math.abs(item.remaining))}` : `Sisa: ${formatCurrency(item.remaining)}`}
                                         </p>
                                     </div>
@@ -156,7 +156,7 @@ export default function Budget() {
                             </div>
 
                             {/* Progress Bar */}
-                            <div className="h-3 bg-slate-950 rounded-full overflow-hidden relative">
+                            <div className="h-3 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden relative">
                                 <div
                                     className={cn(
                                         "h-full rounded-full transition-all duration-1000",
@@ -171,11 +171,11 @@ export default function Budget() {
                 </div>
 
                 {budgetStats.length === 0 && (
-                    <div className="text-center py-10 text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                    <div className="text-center py-10 text-slate-500 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
                         <p className="mb-2">Belum ada target anggaran.</p>
                         <button
                             onClick={handleOpenAdd}
-                            className="text-indigo-400 hover:underline"
+                            className="text-indigo-500 dark:text-indigo-400 hover:underline"
                         >
                             Buat sekarang
                         </button>

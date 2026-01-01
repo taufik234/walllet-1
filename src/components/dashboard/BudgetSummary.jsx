@@ -18,13 +18,13 @@ export default function BudgetSummary() {
 
     if (globalStats.totalLimit === 0) {
         return (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-none">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-white">Target Anggaran</h3>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Target Anggaran</h3>
                 </div>
                 <div className="text-center py-6">
-                    <p className="text-slate-400 text-sm mb-4">Belum ada target anggaran yang diatur.</p>
-                    <Link to="/budget" className="text-indigo-400 text-sm font-medium hover:underline">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Belum ada target anggaran yang diatur.</p>
+                    <Link to="/budget" className="text-indigo-500 dark:text-indigo-400 text-sm font-medium hover:underline">
                         Atur Budget Sekarang
                     </Link>
                 </div>
@@ -33,10 +33,10 @@ export default function BudgetSummary() {
     }
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-none">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white">Target Anggaran</h3>
-                <Link to="/budget" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Target Anggaran</h3>
+                <Link to="/budget" className="text-xs text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 flex items-center gap-1">
                     Lihat Detail <ArrowRight className="w-3 h-3" />
                 </Link>
             </div>
@@ -44,10 +44,10 @@ export default function BudgetSummary() {
             <div className="space-y-4">
                 <div>
                     <div className="flex justify-between items-baseline mb-2">
-                        <span className="text-slate-400 text-sm">Total Budget</span>
-                        <span className="text-white font-bold">{formatCurrency(globalStats.totalLimit)}</span>
+                        <span className="text-slate-500 dark:text-slate-400 text-sm">Total Budget</span>
+                        <span className="text-slate-900 dark:text-white font-bold">{formatCurrency(globalStats.totalLimit)}</span>
                     </div>
-                    <div className="relative h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
                             className={cn(
                                 "h-full rounded-full transition-all duration-1000",
@@ -60,15 +60,15 @@ export default function BudgetSummary() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-2">
-                    <div className="bg-slate-950 rounded-xl p-3 border border-slate-800/50">
+                    <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-3 border border-slate-200 dark:border-slate-800/50">
                         <p className="text-xs text-slate-500 mb-1">Terpakai</p>
-                        <p className={cn("font-bold", globalStats.percentage > 100 ? "text-rose-400" : "text-white")}>
+                        <p className={cn("font-bold", globalStats.percentage > 100 ? "text-rose-500 dark:text-rose-400" : "text-slate-900 dark:text-white")}>
                             {formatCurrency(globalStats.totalSpent)}
                         </p>
                     </div>
-                    <div className="bg-slate-950 rounded-xl p-3 border border-slate-800/50">
+                    <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-3 border border-slate-200 dark:border-slate-800/50">
                         <p className="text-xs text-slate-500 mb-1">Sisa</p>
-                        <p className={cn("font-bold", globalStats.totalRemaining < 0 ? "text-rose-400" : "text-emerald-400")}>
+                        <p className={cn("font-bold", globalStats.totalRemaining < 0 ? "text-rose-500 dark:text-rose-400" : "text-emerald-500 dark:text-emerald-400")}>
                             {formatCurrency(globalStats.totalRemaining)}
                         </p>
                     </div>

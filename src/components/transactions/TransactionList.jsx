@@ -64,7 +64,7 @@ export default function TransactionList() {
 
                 return (
                     <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <h3 className="text-sm font-bold text-slate-400 mb-3 sticky top-0 bg-slate-950/90 backdrop-blur py-2 z-10 w-full">
+                        <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-3 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur py-2 z-10 w-full transition-colors">
                             {displayDate}
                         </h3>
                         <div className="space-y-3">
@@ -74,27 +74,27 @@ export default function TransactionList() {
                                     <div
                                         key={trx.id}
                                         onClick={() => setViewTransaction(trx)}
-                                        className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center gap-4 hover:border-indigo-500/30 hover:bg-slate-800/50 transition-all cursor-pointer group relative overflow-hidden active:scale-[0.98]"
+                                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center gap-4 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer group relative overflow-hidden active:scale-[0.98] shadow-sm dark:shadow-none"
                                     >
                                         <div className={cn(
                                             "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
-                                            trx.type === 'income' ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
+                                            trx.type === 'income' ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400" : "bg-rose-500/10 text-rose-500 dark:text-rose-400"
                                         )}>
                                             <Icon className="w-5 h-5" />
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-white font-medium capitalize truncate pr-8">{trx.note || trx.category}</p>
+                                            <p className="text-slate-900 dark:text-white font-medium capitalize truncate pr-8">{trx.note || trx.category}</p>
                                             <p className="text-xs text-slate-500 flex items-center gap-1">
                                                 <span className="capitalize">{trx.category}</span>
-                                                <span className="text-slate-600">•</span>
+                                                <span className="text-slate-400 dark:text-slate-600">•</span>
                                                 <span className="capitalize">{trx.wallet || 'Tunai'}</span>
                                             </p>
                                         </div>
 
                                         <div className={cn(
                                             "font-bold whitespace-nowrap text-right",
-                                            trx.type === 'income' ? "text-emerald-400" : "text-rose-400"
+                                            trx.type === 'income' ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"
                                         )}>
                                             {trx.type === 'income' ? '+' : '-'} {formatCurrency(trx.amount)}
                                         </div>
@@ -109,7 +109,7 @@ export default function TransactionList() {
             {hasMore && (
                 <button
                     onClick={handleLoadMore}
-                    className="w-full py-3 text-sm font-medium text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all"
+                    className="w-full py-3 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl transition-all shadow-sm dark:shadow-none"
                 >
                     Muat Lebih Banyak...
                 </button>

@@ -158,17 +158,17 @@ export default function Stats() {
     const COLORS = ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#ef4444', '#10b981'];
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-6 animate-in fade-in duration-500 pb-24">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <h1 className="text-2xl font-bold text-white">Statistik Pengeluaran</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Statistik Pengeluaran</h1>
 
                 {/* Time Range Filter */}
-                <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+                <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
                     <button
                         onClick={() => setTimeRange('week')}
                         className={cn(
                             "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
-                            timeRange === 'week' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
+                            timeRange === 'week' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                         )}
                     >
                         Minggu Ini
@@ -177,7 +177,7 @@ export default function Stats() {
                         onClick={() => setTimeRange('month')}
                         className={cn(
                             "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
-                            timeRange === 'month' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
+                            timeRange === 'month' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                         )}
                     >
                         Bulan Ini
@@ -186,7 +186,7 @@ export default function Stats() {
                         onClick={() => setTimeRange('year')}
                         className={cn(
                             "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
-                            timeRange === 'year' ? "bg-indigo-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-200"
+                            timeRange === 'year' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                         )}
                     >
                         Tahun Ini
@@ -214,20 +214,20 @@ export default function Stats() {
                 {/* 2. Category Cards (Dynamic) */}
                 {categoryData.length > 0 ? (
                     categoryData.map((cat, index) => (
-                        <div key={cat.name} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between hover:border-slate-700 transition-colors group">
+                        <div key={cat.name} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex flex-col justify-between hover:border-indigo-500/30 dark:hover:border-slate-700 transition-colors group shadow-sm dark:shadow-none">
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
                                     <div
                                         className="w-2 h-2 rounded-full"
                                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                                     ></div>
-                                    <p className="text-slate-400 text-xs font-medium truncate">{cat.name}</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs font-medium truncate">{cat.name}</p>
                                 </div>
-                                <h3 className="text-lg font-bold text-white truncate">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate">
                                     {formatCurrency(cat.value)}
                                 </h3>
                             </div>
-                            <div className="mt-3 w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div className="mt-3 w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                                 <div
                                     className="h-full rounded-full"
                                     style={{
@@ -239,26 +239,26 @@ export default function Stats() {
                         </div>
                     ))
                 ) : (
-                    <div className="col-span-2 bg-slate-900 border border-slate-800 border-dashed p-4 rounded-2xl flex items-center justify-center text-slate-500 text-sm">
+                    <div className="col-span-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-dashed p-4 rounded-2xl flex items-center justify-center text-slate-500 text-sm">
                         Belum ada data
                     </div>
                 )}
             </div>
 
             {/* Comparison Chart */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-none">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">
                         {timeRange === 'week' ? 'Perbandingan: Minggu Ini vs Lalu' :
                             timeRange === 'month' ? 'Perbandingan: Bulan Ini vs Lalu' :
                                 'Perbandingan: Tahun Ini vs Lalu'}
                     </h3>
                     <div className="flex items-center gap-4 text-xs font-medium">
-                        <div className="flex items-center gap-2 text-indigo-400">
+                        <div className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400">
                             <span className="w-2 h-2 rounded-full bg-indigo-500"></span> Current
                         </div>
                         <div className="flex items-center gap-2 text-slate-500">
-                            <span className="w-2 h-2 rounded-full bg-slate-500"></span> Previous
+                            <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500"></span> Previous
                         </div>
                     </div>
                 </div>
@@ -316,8 +316,8 @@ export default function Stats() {
             </div>
 
             {/* Pie Chart & Breakdown */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-white mb-4">Distribusi Kategori</h3>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm dark:shadow-none">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Distribusi Kategori</h3>
 
                 {categoryData.length > 0 ? (
                     <div className="h-[300px] w-full flex items-center justify-center">
@@ -355,13 +355,13 @@ export default function Stats() {
             {/* Breakdown List */}
             <div className="grid gap-4">
                 {categoryData.map((item, index) => (
-                    <div key={item.name} className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+                    <div key={item.name} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-sm dark:shadow-none">
                         <div className="flex items-center gap-3">
                             <div
                                 className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
                             />
-                            <span className="text-slate-200 font-medium">{item.name}</span>
+                            <span className="text-slate-900 dark:text-slate-200 font-medium">{item.name}</span>
                         </div>
                         <div className="flex items-center gap-4">
                             <span className="text-xs text-slate-500">
@@ -369,7 +369,7 @@ export default function Stats() {
                                     ((item.value / filteredTransactions.reduce((acc, t) => acc + Number(t.amount), 0)) * 100).toFixed(1) + '%'
                                     : '0%'}
                             </span>
-                            <span className="font-bold text-slate-200">
+                            <span className="font-bold text-slate-900 dark:text-slate-200">
                                 {formatCurrency(item.value)}
                             </span>
                         </div>
