@@ -9,7 +9,7 @@ export default function Layout() {
     const { isModalOpen, closeModal, openModal, editingTransaction } = useTransactions();
 
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans selection:bg-indigo-500/30 transition-colors duration-300">
             <Sidebar onOpenAdd={() => openModal()} />
 
             <main className="lg:pl-64 min-h-screen pb-20 lg:pb-0">

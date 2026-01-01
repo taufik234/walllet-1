@@ -17,18 +17,18 @@ export default function Sidebar({ onOpenAdd }) {
     ];
 
     return (
-        <aside className="hidden lg:flex flex-col w-64 h-screen bg-slate-950 border-r border-slate-800 fixed left-0 top-0 overflow-y-auto">
+        <aside className="hidden lg:flex flex-col w-64 h-screen bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 fixed left-0 top-0 overflow-y-auto transition-colors duration-300">
             <div className="p-6">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
                         <Wallet className="w-6 h-6 text-white" />
                     </div>
-                    <h1 className="text-xl font-bold text-white tracking-tight">FinDashboard</h1>
+                    <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">FinDashboard</h1>
                 </div>
 
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-                    <p className="text-xs text-slate-400 mb-1">Total Saldo</p>
-                    <p className="font-bold text-white text-lg">{formatCurrency(stats?.totalBalance || 0)}</p>
+                <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 transition-colors duration-300">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Saldo</p>
+                    <p className="font-bold text-slate-900 dark:text-white text-lg">{formatCurrency(stats?.totalBalance || 0)}</p>
                 </div>
             </div>
 
@@ -42,7 +42,7 @@ export default function Sidebar({ onOpenAdd }) {
                                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                                 isActive
                                     ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
-                                    : "text-slate-400 hover:bg-slate-900 hover:text-white"
+                                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white"
                             )
                         }
                     >
@@ -52,7 +52,7 @@ export default function Sidebar({ onOpenAdd }) {
                 ))}
             </nav>
 
-            <div className="p-4 border-t border-slate-900">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-900 transition-colors duration-300">
                 <button
                     onClick={onOpenAdd}
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl p-4 flex items-center justify-center gap-2 font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-[0.98]"
