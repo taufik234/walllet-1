@@ -20,16 +20,13 @@ export default function Login() {
         setError('');
         setLoading(true);
 
-        // Simulate API call delay
-        setTimeout(() => {
-            const success = login(formData.email, formData.password);
-            if (success) {
-                navigate('/');
-            } else {
-                setError('Login gagal');
-                setLoading(false);
-            }
-        }, 1500);
+        try {
+            await login(formData.email, formData.password);
+            navigate('/');
+        } catch (error) {
+            setError(error.message || 'Login gagal. Periksa email dan password.');
+            setLoading(false);
+        }
     };
 
     return (

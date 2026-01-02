@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { X, Check } from 'lucide-react';
 import { cn } from '../../utils/utils';
 import { useTransactions } from '../../context/TransactionContext';
-import { CATEGORIES } from '../../data/mockData';
 
 export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
-    const { updateBudget, budgets } = useTransactions();
+    const { updateBudget, budgets, categories } = useTransactions();
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
 
@@ -28,8 +27,8 @@ export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
 
     // Filter categories that don't have a budget yet (for Add mode)
     // For Edit mode, we must allow the current category even if it exists
-    const availableCategories = CATEGORIES.expense.filter(c =>
-        !budgets[c.id] || (editData && c.id === editData.category)
+    const availableCategories = (categories?.expense || []).filter(c =>
+        !budgets.some(b => b.category_id === c.id) || (editData && c.id === editData.category)
     );
 
     const handleAmountChange = (e) => {
@@ -100,7 +99,7 @@ export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
                                             editData && category !== cat.id && "opacity-50 cursor-not-allowed"
                                         )}
                                     >
-                                        <span className="text-[10px] uppercase font-bold tracking-wider">{cat.label}</span>
+                                        <span className="text-[10px] uppercase font-bold tracking-wider text-center">{cat.name}</span>
                                     </button>
                                 ))
                             ) : (

@@ -5,8 +5,9 @@ import { Wallet, ShoppingBag, Utensils, Car, Film, Gift, TrendingUp, MoreHorizon
 import TransactionDetailModal from './TransactionDetailModal';
 
 // Helper to get icon (duplicated for now, could be shared)
-const getIcon = (category) => {
-    switch (category) {
+const getIcon = (categoryName) => {
+    const name = categoryName?.toLowerCase() || '';
+    switch (name) {
         case 'makan': return Utensils;
         case 'transport': return Car;
         case 'belanja': return ShoppingBag;
@@ -69,7 +70,8 @@ export default function TransactionList() {
                         </h3>
                         <div className="space-y-3">
                             {dayTransactions.map((trx) => {
-                                const Icon = getIcon(trx.category);
+                                const categoryName = trx.category?.name || 'Lainnya';
+                                const Icon = getIcon(categoryName);
                                 return (
                                     <div
                                         key={trx.id}
@@ -84,11 +86,11 @@ export default function TransactionList() {
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-slate-900 dark:text-white font-medium capitalize truncate pr-8">{trx.note || trx.category}</p>
+                                            <p className="text-slate-900 dark:text-white font-medium capitalize truncate pr-8">{trx.note || categoryName}</p>
                                             <p className="text-xs text-slate-500 flex items-center gap-1">
-                                                <span className="capitalize">{trx.category}</span>
+                                                <span className="capitalize">{categoryName}</span>
                                                 <span className="text-slate-400 dark:text-slate-600">•</span>
-                                                <span className="capitalize">{trx.wallet || 'Tunai'}</span>
+                                                <span className="capitalize">{trx.wallet?.name || 'Tunai'}</span>
                                             </p>
                                         </div>
 

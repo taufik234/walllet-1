@@ -27,17 +27,20 @@ export default function Register() {
             return;
         }
 
+        if (formData.password.length < 6) {
+            setError('Password minimal 6 karakter');
+            return;
+        }
+
         setLoading(true);
 
-        // Simulate API call delay
-        setTimeout(() => {
-            const success = register(formData.name, formData.email, formData.password);
-            if (success) {
-                navigate('/'); // Direct to dashboard after register
-            } else {
-                setLoading(false);
-            }
-        }, 1500);
+        try {
+            await register(formData.name, formData.email, formData.password);
+            navigate('/'); // Direct to dashboard after register
+        } catch (error) {
+            setError(error.message || 'Registrasi gagal. Coba lagi.');
+            setLoading(false);
+        }
     };
 
     return (

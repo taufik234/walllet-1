@@ -2,31 +2,25 @@ import React, { useState } from 'react';
 import { X, Check, Calendar, FileText, DollarSign } from 'lucide-react';
 import { cn } from '../../utils/utils';
 import { useTransactions } from '../../context/TransactionContext';
-import { CATEGORIES, WALLETS } from '../../data/mockData';
 
 export default function AddTransactionModal({ isOpen, onClose, editData = null }) {
-    const { addTransaction, editTransaction, isPreset } = useTransactions();
+    const { addTransaction, editTransaction, isPreset, categories, wallets } = useTransactions();
     const [type, setType] = useState('expense'); // 'income' | 'expense'
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [note, setNote] = useState('');
-    const [wallet, setWallet] = useState('cash');
+    const [wallet, setWallet] = useState('');
 
     // Load data when editData changes
     React.useEffect(() => {
         if (editData) {
             setType(editData.type);
             setAmount(new Intl.NumberFormat('id-ID').format(editData.amount));
-            setCategory(editData.category);
-            // If preset, use TODAY not the old date (which might be from a template)
-            // Actually, for presets, we likely create a new object with 'date' set to today in QuickActions
-            // But to be safe, if strictly preset, maybe default to today? 
-            // Let's assume the preset object passed has correct date or we override it.
-            // For now, trust the data passed.
+            setCategory(editData.category_id || editData.category);
             setDate(editData.date || new Date().toISOString().split('T')[0]);
             setNote(editData.note || '');
-            setWallet(editData.wallet || 'cash');
+            setWallet(editData.wallet_id || editData.wallet || '');
         } else {
             // Reset if no editData (Add mode)
             setType('expense');
@@ -34,9 +28,9 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
             setCategory('');
             setDate(new Date().toISOString().split('T')[0]);
             setNote('');
-            setWallet('cash');
+            setWallet(wallets.length > 0 ? wallets[0].id : '');
         }
-    }, [editData, isOpen]);
+    }, [editData, isOpen, wallets]);
 
     if (!isOpen) return null;
 
@@ -58,10 +52,10 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
         const transactionData = {
             type,
             amount: numericAmount,
-            category,
+            category_id: category, // Use category_id for backend
             date,
             note,
-            wallet
+            wallet_id: wallet || (wallets[0]?.id) // Use wallet_id for backend
         };
 
         // If it looks like editData but isPreset is true, we treat it as ADD
@@ -74,7 +68,7 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
         onClose();
     };
 
-    const currentCategories = CATEGORIES[type];
+    const currentCategories = categories ? categories[type] : [];
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
@@ -133,20 +127,20 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                     {/* Wallet Selector */}
                     <div className="space-y-2">
                         <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Sumber Dana</label>
-                        <div className="bg-slate-100 dark:bg-slate-950 p-1 rounded-xl flex gap-1">
-                            {WALLETS.map(w => (
+                        <div className="bg-slate-100 dark:bg-slate-950 p-1 rounded-xl flex gap-1 overflow-x-auto">
+                            {wallets.map(w => (
                                 <button
                                     key={w.id}
                                     type="button"
                                     onClick={() => setWallet(w.id)}
                                     className={cn(
-                                        "flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all border",
+                                        "flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all border whitespace-nowrap",
                                         wallet === w.id
                                             ? "bg-white dark:bg-indigo-600/10 border-indigo-500 dark:border-indigo-500/50 text-indigo-600 dark:text-indigo-400 shadow-sm"
                                             : "bg-transparent border-transparent text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-900"
                                     )}
                                 >
-                                    {w.label}
+                                    {w.name}
                                 </button>
                             ))}
                         </div>
@@ -155,22 +149,29 @@ export default function AddTransactionModal({ isOpen, onClose, editData = null }
                     {/* Categories Grid */}
                     <div className="space-y-2">
                         <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Kategori</label>
-                        <div className="grid grid-cols-4 gap-2">
-                            {currentCategories.map((cat) => (
-                                <button
-                                    key={cat.id}
-                                    type="button"
-                                    onClick={() => setCategory(cat.id)}
-                                    className={cn(
-                                        "flex flex-col items-center justify-center p-2 rounded-xl gap-1 transition-all border",
-                                        category === cat.id
-                                            ? "bg-white dark:bg-indigo-600/10 border-indigo-500 dark:border-indigo-600/50 text-indigo-600 dark:text-indigo-400 shadow-sm"
-                                            : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
-                                    )}
-                                >
-                                    <span className="text-[10px] uppercase font-bold tracking-wider">{cat.label}</span>
-                                </button>
-                            ))}
+                        <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+                            {currentCategories.length > 0 ? (
+                                currentCategories.map((cat) => (
+                                    <button
+                                        key={cat.id}
+                                        type="button"
+                                        onClick={() => setCategory(cat.id)}
+                                        className={cn(
+                                            "flex flex-col items-center justify-center p-2 rounded-xl gap-1 transition-all border",
+                                            category === cat.id
+                                                ? "bg-white dark:bg-indigo-600/10 border-indigo-500 dark:border-indigo-600/50 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                                                : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
+                                        )}
+                                    >
+                                        {/* Icon render can be added here if icon string matches lucide icon names, for now just text */}
+                                        <span className="text-[10px] uppercase font-bold tracking-wider text-center">{cat.name}</span>
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="col-span-4 text-center py-4 text-slate-500 text-sm italic">
+                                    Memuat kategori...
+                                </div>
+                            )}
                         </div>
                     </div>
 

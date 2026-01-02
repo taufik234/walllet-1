@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Profile() {
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const { transactions, theme, toggleTheme, resetBudget } = useTransactions();
 
     const handleLogout = () => {
@@ -68,11 +68,11 @@ export default function Profile() {
             {/* Profile Card */}
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex items-center gap-4 transition-colors duration-300 shadow-sm">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg shadow-indigo-500/20">
-                    JD
+                    {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
                 </div>
                 <div>
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">John Doe</h2>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">Free Plan</p>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">{user?.name || 'User'}</h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">{user?.email || 'Free Plan'}</p>
                 </div>
             </div>
 

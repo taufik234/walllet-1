@@ -2,18 +2,17 @@ import React, { useState, useMemo } from 'react';
 import { useTransactions } from '../context/TransactionContext';
 import { formatCurrency, cn } from '../utils/utils';
 import { Pencil, AlertCircle, Plus, Trash2 } from 'lucide-react';
-import { CATEGORIES } from '../data/mockData';
 import AddBudgetModal from '../components/shared/AddBudgetModal';
 
 export default function Budget() {
-    const { budgetStats, deleteBudget, budgets, resetBudget } = useTransactions();
+    const { budgetStats, deleteBudget, budgets, resetBudget, categories } = useTransactions();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editData, setEditData] = useState(null);
 
     // Calculate Global Budget Stats (Main Budget)
     const globalStats = useMemo(() => {
-        const totalLimit = budgetStats.reduce((acc, curr) => acc + curr.limit, 0);
-        const totalSpent = budgetStats.reduce((acc, curr) => acc + curr.spent, 0);
+        const totalLimit = budgetStats.reduce((acc, curr) => acc + Number(curr.limit_amount || 0), 0);
+        const totalSpent = budgetStats.reduce((acc, curr) => acc + Number(curr.spent || 0), 0);
         const totalRemaining = totalLimit - totalSpent;
         const percentage = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0;
 
@@ -22,17 +21,18 @@ export default function Budget() {
 
     // Check if we can add more budgets (if valid categories left)
     const canAddMore = useMemo(() => {
-        const budgetedCats = Object.keys(budgets);
-        return CATEGORIES.expense.length > budgetedCats.length;
-    }, [budgets]);
+        const expenseCategories = categories?.expense || [];
+        const budgetedCats = budgets.length;
+        return expenseCategories.length > budgetedCats;
+    }, [budgets, categories]);
 
     const handleOpenAdd = () => {
         setEditData(null);
         setIsModalOpen(true);
     };
 
-    const handleOpenEdit = (category, limit) => {
-        setEditData({ category, limit });
+    const handleOpenEdit = (categoryId, limit) => {
+        setEditData({ category: categoryId, limit });
         setIsModalOpen(true);
     };
 
@@ -117,11 +117,11 @@ export default function Budget() {
 
                 <div className="grid gap-4">
                     {budgetStats.map((item) => (
-                        <div key={item.category} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-indigo-500/30 dark:hover:border-slate-700 transition-all group/card shadow-sm dark:shadow-none">
+                        <div key={item.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-indigo-500/30 dark:hover:border-slate-700 transition-all group/card shadow-sm dark:shadow-none">
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex-1">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white capitalize flex items-center gap-2">
-                                        {item.category}
+                                        {item.category?.name || 'Unknown'}
                                         {item.isOver && <AlertCircle className="w-5 h-5 text-rose-500" />}
                                     </h3>
                                     <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
@@ -133,10 +133,10 @@ export default function Budget() {
                                     <div className="flex flex-col items-end">
                                         <div
                                             className="group flex items-center gap-2 justify-end cursor-pointer"
-                                            onClick={() => handleOpenEdit(item.category, item.limit)}
+                                            onClick={() => handleOpenEdit(item.category_id, item.limit_amount)}
                                         >
                                             <span className="text-slate-500 dark:text-slate-400 text-sm">Target:</span>
-                                            <span className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors">{formatCurrency(item.limit)}</span>
+                                            <span className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors">{formatCurrency(item.limit_amount)}</span>
                                             <Pencil className="w-3 h-3 text-slate-400 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-all" />
                                         </div>
                                         <p className={cn("text-xs mt-1", item.remaining < 0 ? "text-rose-500 dark:text-rose-400" : "text-emerald-500 dark:text-emerald-400")}>
@@ -146,7 +146,7 @@ export default function Budget() {
 
                                     {/* Delete Button (Always Visible) */}
                                     <button
-                                        onClick={() => deleteBudget(item.category)}
+                                        onClick={() => deleteBudget(item.id || item.category_id)}
                                         className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg transition-colors"
                                         title="Hapus Budget"
                                     >

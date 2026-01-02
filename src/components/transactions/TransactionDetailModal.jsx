@@ -2,7 +2,6 @@ import React from 'react';
 import { X, Calendar, Wallet, FileText, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, Share2 } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../utils/utils';
 import { useTransactions } from '../../context/TransactionContext';
-import { WALLETS, CATEGORIES } from '../../data/mockData';
 
 export default function TransactionDetailModal({ isOpen, onClose, transaction }) {
     const { deleteTransaction, openModal } = useTransactions();
@@ -10,11 +9,10 @@ export default function TransactionDetailModal({ isOpen, onClose, transaction })
     if (!isOpen || !transaction) return null;
 
     const isIncome = transaction.type === 'income';
-    const WalletLabel = WALLETS.find(w => w.id === transaction.wallet)?.label || 'Tunai';
 
-    // Find category label
-    const categoryList = isIncome ? CATEGORIES.income : CATEGORIES.expense;
-    const categoryLabel = categoryList.find(c => c.id === transaction.category)?.label || transaction.category;
+    // Use optional chaining and fallback for Supabase relation objects
+    const WalletLabel = transaction.wallet?.name || 'Tunai';
+    const categoryLabel = transaction.category?.name || 'Lainnya';
 
     const handleDelete = () => {
         if (window.confirm('Yakin ingin menghapus transaksi ini?')) {
