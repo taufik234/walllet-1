@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { User, Settings, LogOut, Download, Upload, Trash2, Moon, Sun, AlertTriangle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useTransactions } from '../context/TransactionContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function Profile() {
+    const navigate = useNavigate();
+    const { logout } = useAuth();
     const { transactions, theme, toggleTheme, resetBudget } = useTransactions();
-    // Removed local theme state
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     const handleExport = () => {
         if (!transactions || transactions.length === 0) {
@@ -119,6 +127,26 @@ export default function Profile() {
                         </div>
                         <input type="file" accept=".json" onChange={handleImport} className="hidden" />
                     </label>
+                </div>
+            </div>
+
+
+            {/* Account Management */}
+            <div className="space-y-2">
+                <h3 className="text-xs font-bold text-slate-500 px-2 uppercase tracking-wider">Akun</h3>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden transition-colors duration-300 shadow-sm">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full p-4 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left group"
+                    >
+                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg group-hover:bg-indigo-500/10 dark:group-hover:bg-indigo-500/20 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors text-slate-500 dark:text-slate-400">
+                            <LogOut className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                            <span className="text-slate-900 dark:text-slate-200 font-medium block">Keluar Aplikasi</span>
+                            <span className="text-xs text-slate-500">Log out dari akun anda</span>
+                        </div>
+                    </button>
                 </div>
             </div>
 
