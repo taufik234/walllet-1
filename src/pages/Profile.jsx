@@ -54,10 +54,58 @@ export default function Profile() {
         reader.readAsText(file);
     };
 
-    const handleFactoryReset = () => {
-        if (window.confirm('PERINGATAN: Semua data transaksi dan budget akan DIHAPUS PERMANEN. Tindakan ini tidak bisa dibatalkan.\n\nApakah anda yakin?')) {
-            localStorage.clear();
-            window.location.reload();
+    const handleFactoryReset = async () => {
+        if (window.confirm('PERINGATAN: Semua data transaksi, budget, dan dompet akan DIHAPUS. Anda akan tetap login.\n\nApakah anda yakin ingin mereset data?')) {
+            try {
+                // Delete all data
+                await import('../lib/services').then(async ({ transactionService, budgetService, walletService }) => {
+                    await Promise.all([
+                        transactionService.deleteAll(),
+                        budgetService.deleteAll(),
+                        walletService.resetAll()
+                    ]);
+                });
+
+                alert('Reset data berhasil. Halaman akan dimuat ulang untuk memperbarui data.');
+                window.location.reload();
+            } catch (error) {
+                console.error('Reset failed:', error);
+                alert('Gagal melakukan reset data. Silakan coba lagi.');
+            }
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        const confirm1 = window.confirm('BAHAYA: Anda akan MENGHAPUS AKUN secara permanen.\nSemua data akan hilang dan anda akan logout.\n\nLanjutkan?');
+        if (!confirm1) return;
+
+        const confirm2 = window.prompt('Ketik "DELETE" untuk mengkonfirmasi penghapusan akun.');
+        if (confirm2 !== 'DELETE') {
+            alert('Penghapusan dibatalkan.');
+            return;
+        }
+
+        try {
+            // Delete data first (optional if CASCADE is set, but stricter to do it anyway)
+            await import('../lib/services').then(async ({ transactionService, budgetService, walletService, authService }) => {
+                await Promise.all([
+                    transactionService.deleteAll(),
+                    budgetService.deleteAll(),
+                    walletService.resetAll()
+                ]);
+
+                // Call RPC to self-delete user
+                await authService.deleteAccount();
+            });
+
+            alert('Akun berhasil dihapus.');
+            // No need to call handleLogout manually as deleteAccount does signOut, 
+            // but for safety/UI redirect:
+            navigate('/login');
+        } catch (error) {
+            console.error('Delete account failed:', error);
+            alert('Gagal menghapus akun. Pastikan anda sudah menjalankan script RPC di Supabase SQL Editor.');
+            handleLogout();
         }
     };
 
@@ -153,7 +201,7 @@ export default function Profile() {
             {/* Danger Zone */}
             <div className="space-y-2">
                 <h3 className="text-xs font-bold text-rose-500 px-2 uppercase tracking-wider">Danger Zone</h3>
-                <div className="bg-rose-50 dark:bg-rose-950/10 border border-rose-200 dark:border-rose-500/20 rounded-2xl overflow-hidden transition-colors duration-300 shadow-sm">
+                <div className="bg-rose-50 dark:bg-rose-950/10 border border-rose-200 dark:border-rose-500/20 rounded-2xl overflow-hidden transition-colors duration-300 shadow-sm divide-y divide-rose-100 dark:divide-rose-900/20">
                     <button
                         onClick={handleFactoryReset}
                         className="w-full p-4 flex items-center gap-3 hover:bg-rose-100 dark:hover:bg-rose-500/10 transition-colors text-left group"
@@ -162,10 +210,23 @@ export default function Profile() {
                             <Trash2 className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                            <span className="text-rose-600 dark:text-rose-400 group-hover:text-rose-700 dark:group-hover:text-rose-300 font-medium block">Factory Reset</span>
-                            <span className="text-xs text-rose-500/80 group-hover:text-rose-600/90 dark:group-hover:text-rose-400/80">Hapus semua data & reset ke setelan awal</span>
+                            <span className="text-rose-600 dark:text-rose-400 group-hover:text-rose-700 dark:group-hover:text-rose-300 font-medium block">Reset Data (Factory Reset)</span>
+                            <span className="text-xs text-rose-500/80 group-hover:text-rose-600/90 dark:group-hover:text-rose-400/80">Hapus semua data transaksi & budget (Tetap login)</span>
                         </div>
                         <AlertTriangle className="w-5 h-5 text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+
+                    <button
+                        onClick={handleDeleteAccount}
+                        className="w-full p-4 flex items-center gap-3 hover:bg-rose-100 dark:hover:bg-rose-500/10 transition-colors text-left group"
+                    >
+                        <div className="p-2 bg-rose-500/10 dark:bg-rose-500/20 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors text-rose-600 dark:text-rose-500">
+                            <User className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                            <span className="text-rose-600 dark:text-rose-400 group-hover:text-rose-700 dark:group-hover:text-rose-300 font-medium block">Hapus Akun</span>
+                            <span className="text-xs text-rose-500/80 group-hover:text-rose-600/90 dark:group-hover:text-rose-400/80">Hapus semua data & keluar aplikasi permanen</span>
+                        </div>
                     </button>
                 </div>
             </div>

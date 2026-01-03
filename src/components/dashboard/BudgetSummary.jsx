@@ -8,7 +8,7 @@ export default function BudgetSummary() {
     const { budgetStats } = useTransactions();
 
     const globalStats = useMemo(() => {
-        const totalLimit = budgetStats.reduce((acc, curr) => acc + curr.limit, 0);
+        const totalLimit = budgetStats.reduce((acc, curr) => acc + Number(curr.limit_amount || 0), 0);
         const totalSpent = budgetStats.reduce((acc, curr) => acc + curr.spent, 0);
         const totalRemaining = totalLimit - totalSpent;
         const percentage = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0;

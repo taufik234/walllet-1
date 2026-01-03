@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
-import { Wallet, CreditCard, Smartphone, ArrowRight, Plus } from 'lucide-react';
+import { Wallet, CreditCard, Smartphone, DollarSign, PiggyBank, ArrowRight, Plus, Banknote } from 'lucide-react';
 import { useTransactions } from '../context/TransactionContext';
 import { formatCurrency, cn } from '../utils/utils';
-import { WALLETS } from '../data/mockData';
 import AdjustBalanceModal from '../components/dashboard/AdjustBalanceModal';
 import { Link } from 'react-router-dom';
 
+const getIcon = (iconName) => {
+    switch (iconName) {
+        case 'Wallet': return Banknote;
+        case 'Banknote': return Banknote;
+        case 'CreditCard': return CreditCard;
+        case 'Smartphone': return Smartphone;
+        case 'CircleDollarSign': return DollarSign;
+        default: return PiggyBank;
+    }
+}
+
 export default function Wallets() {
-    const { walletStats, transactions } = useTransactions();
+    const { walletStats, transactions, wallets } = useTransactions();
     const [selectedWallet, setSelectedWallet] = useState(null);
     const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
 
@@ -22,13 +32,13 @@ export default function Wallets() {
 
             {/* Wallet Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {WALLETS.map((wallet) => {
-                    const Icon = wallet.id === 'cash' ? Wallet : wallet.id === 'bank' ? CreditCard : Smartphone;
+                {wallets.map((wallet) => {
+                    const Icon = getIcon(wallet.icon);
                     const balance = walletStats[wallet.id] || 0;
 
                     // Get recent transactions for this wallet
                     const recentTx = transactions
-                        .filter(t => (t.wallet || 'cash') === wallet.id)
+                        .filter(t => t.wallet_id === wallet.id)
                         .slice(0, 3); // Last 3
 
                     return (
@@ -40,7 +50,7 @@ export default function Wallets() {
                                         <Icon className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{wallet.label}</h2>
+                                        <h2 className="text-lg font-bold text-slate-900 dark:text-white">{wallet.name}</h2>
                                         <p className="text-sm text-slate-500">Saldo saat ini</p>
                                     </div>
                                 </div>
@@ -53,6 +63,7 @@ export default function Wallets() {
                                 <button
                                     onClick={() => handleAdjustClick(wallet.id)}
                                     className="text-sm font-medium text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                                    disabled={wallet.id === 'all'} // Just in case, though usually specific wallets
                                 >
                                     Atur Saldo Manual <ArrowRight className="w-4 h-4" />
                                 </button>
@@ -65,7 +76,7 @@ export default function Wallets() {
                                     {recentTx.length > 0 ? (
                                         recentTx.map(t => (
                                             <div key={t.id} className="flex justify-between items-center text-sm">
-                                                <span className="text-slate-600 dark:text-slate-300 truncate max-w-[60%]">{t.note}</span>
+                                                <span className="text-slate-600 dark:text-slate-300 truncate max-w-[60%]">{t.note || t.category?.name}</span>
                                                 <span className={t.type === 'income' ? 'text-emerald-500 dark:text-emerald-400 font-medium' : 'text-rose-500 dark:text-rose-400 font-medium'}>
                                                     {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                                                 </span>

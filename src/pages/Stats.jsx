@@ -135,22 +135,20 @@ export default function Stats() {
     // Data for Pie Chart (Aggregated from filtered)
     const categoryData = useMemo(() => {
         const grouped = filteredTransactions.reduce((acc, curr) => {
-            const cat = curr.category;
-            if (!acc[cat]) {
-                acc[cat] = 0;
+            // Use category name from joined object, fallback to 'Lainnya'
+            const catName = curr.category?.name || 'Lainnya';
+            if (!acc[catName]) {
+                acc[catName] = 0;
             }
-            acc[cat] += Number(curr.amount);
+            acc[catName] += Number(curr.amount);
             return acc;
         }, {});
 
         return Object.entries(grouped)
-            .map(([id, value]) => {
-                const catDef = CATEGORIES.expense.find(c => c.id === id);
-                return {
-                    name: catDef ? catDef.label : id,
-                    value
-                };
-            })
+            .map(([name, value]) => ({
+                name,
+                value
+            }))
             .sort((a, b) => b.value - a.value);
     }, [filteredTransactions]);
 

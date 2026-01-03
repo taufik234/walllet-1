@@ -6,6 +6,7 @@ import {
     budgetService,
     categoryService
 } from '../lib/services';
+import { supabase } from '../lib/supabase';
 
 const TransactionContext = createContext();
 
@@ -78,6 +79,44 @@ export const TransactionProvider = ({ children }) => {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    // Realtime Subscription
+    useEffect(() => {
+        if (!user) return;
+
+        // Subscribe to changes in all relevant tables
+        const channel = supabase
+            .channel('db_changes')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'transactions' },
+                () => fetchData()
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'wallets' },
+                () => fetchData()
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'budgets' },
+                () => fetchData()
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'categories' },
+                () => fetchData()
+            )
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('Realtime connected!');
+                }
+            });
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [user, fetchData]);
 
     // Transaction CRUD
     const addTransaction = async (transaction) => {

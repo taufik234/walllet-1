@@ -45,6 +45,12 @@ export const authService = {
     onAuthStateChange(callback) {
         return supabase.auth.onAuthStateChange(callback);
     },
+
+    async deleteAccount() {
+        const { error } = await supabase.rpc('delete_user');
+        if (error) throw error;
+        await this.signOut();
+    },
 };
 
 // ============================================
@@ -96,6 +102,14 @@ export const transactionService = {
             .from('transactions')
             .delete()
             .eq('id', id);
+        if (error) throw error;
+    },
+
+    async deleteAll() {
+        const { error } = await supabase
+            .from('transactions')
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows (filtered by RLS)
         if (error) throw error;
     },
 };
@@ -174,6 +188,15 @@ export const walletService = {
             note: 'Penyesuaian Saldo Manual',
         });
     },
+
+    async resetAll() {
+        // Reset initial balance of all user's wallets to 0
+        const { error } = await supabase
+            .from('wallets')
+            .update({ initial_balance: 0 })
+            .neq('id', '00000000-0000-0000-0000-000000000000'); // All user's wallets
+        if (error) throw error;
+    }
 };
 
 // ============================================
@@ -271,6 +294,14 @@ export const budgetService = {
             .from('budgets')
             .delete()
             .eq('id', id);
+        if (error) throw error;
+    },
+
+    async deleteAll() {
+        const { error } = await supabase
+            .from('budgets')
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000');
         if (error) throw error;
     },
 

@@ -1,17 +1,28 @@
 import React from 'react';
-import { Wallet, CreditCard, Smartphone } from 'lucide-react';
+import { Wallet, CreditCard, Smartphone, DollarSign, PiggyBank, Banknote } from 'lucide-react';
 import { useTransactions } from '../../context/TransactionContext';
 import { formatCurrency } from '../../utils/utils';
-import { WALLETS } from '../../data/mockData';
 import { Link } from 'react-router-dom';
 
+const getIcon = (iconName) => {
+    switch (iconName) {
+        case 'Wallet': return Banknote;
+        case 'Banknote': return Banknote;
+        case 'CreditCard': return CreditCard;
+        case 'Smartphone': return Smartphone;
+        case 'CircleDollarSign': return DollarSign;
+        default: return PiggyBank;
+    }
+}
+
 export default function WalletCards() {
-    const { walletStats } = useTransactions();
+    const { wallets, walletStats } = useTransactions();
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {WALLETS.map((wallet) => {
-                const Icon = wallet.id === 'cash' ? Wallet : wallet.id === 'bank' ? CreditCard : Smartphone;
+            {wallets.map((wallet) => {
+                // Map DB icon string to Component, fallback to generic
+                const Icon = getIcon(wallet.icon);
                 const balance = walletStats[wallet.id] || 0;
 
                 return (
@@ -25,7 +36,7 @@ export default function WalletCards() {
                                 <Icon className="w-6 h-6 md:w-5 md:h-5" />
                             </div>
                             <div className="text-left md:text-center">
-                                <span className="text-xs text-slate-500 dark:text-slate-500 font-medium group-hover:text-slate-600 dark:group-hover:text-slate-400 block">{wallet.label}</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-500 font-medium group-hover:text-slate-600 dark:group-hover:text-slate-400 block">{wallet.name}</span>
                                 {/* Mobile: Show balance here */}
                                 <span className="text-lg font-bold text-slate-900 dark:text-white md:hidden">
                                     {formatCurrency(balance)}

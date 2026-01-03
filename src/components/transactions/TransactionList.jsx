@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTransactions } from '../../context/TransactionContext';
 import { cn, formatCurrency, formatDate } from '../../utils/utils';
-import { Wallet, ShoppingBag, Utensils, Car, Film, Gift, TrendingUp, MoreHorizontal, Trash2, Pencil } from 'lucide-react';
+import { Wallet, ShoppingBag, Utensils, Car, Film, Gift, TrendingUp, MoreHorizontal, Trash2, Pencil, Heart, GraduationCap, Receipt, Briefcase } from 'lucide-react';
 import TransactionDetailModal from './TransactionDetailModal';
 
 // Helper to get icon (duplicated for now, could be shared)
@@ -15,6 +15,10 @@ const getIcon = (categoryName) => {
         case 'gaji': return Wallet;
         case 'bonus': return Gift;
         case 'investasi': return TrendingUp;
+        case 'kesehatan': return Heart;
+        case 'pendidikan': return GraduationCap;
+        case 'tagihan': return Receipt;
+        case 'freelance': return Briefcase;
         default: return MoreHorizontal;
     }
 };
