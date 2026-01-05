@@ -42,7 +42,7 @@ export default function AddSavingsModal({ isOpen, onClose, goal }) {
             />
 
             {/* Modal */}
-            <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md animate-in zoom-in-95 duration-200">
+            <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200 scrollbar-hide">
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800">
                     <div>
