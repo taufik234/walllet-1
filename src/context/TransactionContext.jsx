@@ -4,7 +4,8 @@ import {
     transactionService,
     walletService,
     budgetService,
-    categoryService
+    categoryService,
+    goalService
 } from '../lib/services';
 import { supabase } from '../lib/supabase';
 
@@ -43,6 +44,7 @@ export const TransactionProvider = ({ children }) => {
     const [wallets, setWallets] = useState([]);
     const [categories, setCategories] = useState({ income: [], expense: [] });
     const [budgets, setBudgets] = useState([]);
+    const [goals, setGoals] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Fetch all data from Supabase
@@ -51,23 +53,26 @@ export const TransactionProvider = ({ children }) => {
             setTransactions([]);
             setWallets([]);
             setBudgets([]);
+            setGoals([]);
             setLoading(false);
             return;
         }
 
         try {
             setLoading(true);
-            const [txData, walletData, catData, budgetData] = await Promise.all([
+            const [txData, walletData, catData, budgetData, goalData] = await Promise.all([
                 transactionService.list(),
                 walletService.list(),
                 categoryService.getGrouped(),
                 budgetService.getWithStats(),
+                goalService.list(),
             ]);
 
             setTransactions(txData || []);
             setWallets(walletData || []);
             setCategories(catData || { income: [], expense: [] });
             setBudgets(budgetData || []);
+            setGoals(goalData || []);
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -105,6 +110,11 @@ export const TransactionProvider = ({ children }) => {
             .on(
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'categories' },
+                () => fetchData()
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'goals' },
                 () => fetchData()
             )
             .subscribe((status) => {
@@ -336,7 +346,10 @@ export const TransactionProvider = ({ children }) => {
 
         // Theme
         theme,
-        toggleTheme
+        toggleTheme,
+
+        // Goals
+        goals,
     };
 
     return (

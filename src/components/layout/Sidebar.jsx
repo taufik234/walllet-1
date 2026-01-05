@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, BarChart3, User, Wallet, Plus, PieChart } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, BarChart3, User, Wallet, Plus, PieChart, Target } from 'lucide-react';
 import { cn, formatCurrency } from '../../utils/utils';
 import { useTransactions } from '../../context/TransactionContext';
 
@@ -12,6 +12,7 @@ export default function Sidebar({ onOpenAdd }) {
         { icon: ArrowLeftRight, label: 'Transaksi', to: '/transactions' },
         { icon: BarChart3, label: 'Statistik', to: '/stats' },
         { icon: PieChart, label: 'Budget', to: '/budget' },
+        { icon: Target, label: 'Goals', to: '/goals' },
         { icon: Wallet, label: 'Dompet', to: '/wallets' },
         { icon: User, label: 'Profile', to: '/profile' },
     ];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, PlusCircle, BarChart3, User, Wallet } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, PlusCircle, BarChart3, User, Wallet, Target } from 'lucide-react';
 import { cn } from '../../utils/utils';
 
 export default function BottomNav({ onOpenAdd }) {
@@ -8,7 +8,7 @@ export default function BottomNav({ onOpenAdd }) {
         { icon: LayoutDashboard, label: 'Home', to: '/' },
         { icon: ArrowLeftRight, label: 'Trans', to: '/transactions' },
         { icon: PlusCircle, label: 'Add', to: '#', isAction: true },
-        { icon: BarChart3, label: 'Budget', to: '/budget' },
+        { icon: Target, label: 'Goals', to: '/goals' },
         { icon: Wallet, label: 'Dompet', to: '/wallets' }, // Added Wallet
         // { icon: User, label: 'User', to: '/profile' }, // Might need to swap out User or fit 5 items. 
         // BottomNav usually fits 5 items max comfortably. 

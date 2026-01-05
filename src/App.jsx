@@ -7,6 +7,7 @@ import Stats from './pages/Stats';
 import Budget from './pages/Budget';
 import Profile from './pages/Profile';
 import Wallets from './pages/Wallets';
+import Goals from './pages/Goals';
 import AuthLayout from './components/layout/AuthLayout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import Login from './pages/auth/Login';
@@ -29,6 +30,7 @@ function App() {
         <Route path="transactions" element={<Transactions />} />
         <Route path="stats" element={<Stats />} />
         <Route path="budget" element={<Budget />} />
+        <Route path="goals" element={<Goals />} />
         <Route path="wallets" element={<Wallets />} />
         <Route path="profile" element={<Profile />} />
       </Route>

@@ -358,3 +358,87 @@ export const statsService = {
         }));
     },
 };
+
+// ============================================
+// GOAL SERVICES (Wishlist / Savings Goals)
+// ============================================
+export const goalService = {
+    async list(status = null) {
+        let query = supabase
+            .from('goals')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (status) query = query.eq('status', status);
+
+        const { data, error } = await query;
+        if (error) throw error;
+        return data;
+    },
+
+    async create(goal) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data, error } = await supabase
+            .from('goals')
+            .insert({ ...goal, user_id: user.id })
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    },
+
+    async update(id, updates) {
+        const { data, error } = await supabase
+            .from('goals')
+            .update({ ...updates, updated_at: new Date().toISOString() })
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    },
+
+    async delete(id) {
+        const { error } = await supabase
+            .from('goals')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+    },
+
+    async addSavings(id, amount) {
+        // Get current goal
+        const { data: goal, error: fetchError } = await supabase
+            .from('goals')
+            .select('current_amount, target_amount')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        const newAmount = parseFloat(goal.current_amount) + parseFloat(amount);
+        const isCompleted = newAmount >= parseFloat(goal.target_amount);
+
+        const { data, error } = await supabase
+            .from('goals')
+            .update({
+                current_amount: newAmount,
+                status: isCompleted ? 'completed' : 'active',
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    async deleteAll() {
+        const { error } = await supabase
+            .from('goals')
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000');
+        if (error) throw error;
+    },
+};
