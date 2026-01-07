@@ -1,9 +1,11 @@
 import React from 'react';
-import { Utensils, Car, Coffee, ShoppingBag, Zap, Briefcase } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Utensils, Car, Coffee, ShoppingBag, Zap, Briefcase, ArrowLeftRight } from 'lucide-react';
 import { useTransactions } from '../../context/TransactionContext';
 
 export default function QuickActions() {
     const { openModal } = useTransactions();
+    const navigate = useNavigate();
 
     const actions = [
         {
@@ -48,6 +50,17 @@ export default function QuickActions() {
         <div>
             <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3 px-1">Aksi Cepat</h3>
             <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                {/* Transaction History Shortcut */}
+                <button
+                    onClick={() => navigate('/transactions')}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 transition-all active:scale-95 whitespace-nowrap"
+                >
+                    <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
+                        <ArrowLeftRight className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-sm font-bold">Riwayat</span>
+                </button>
+
                 {actions.map((action, idx) => {
                     const Icon = action.icon;
                     return (
