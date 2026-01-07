@@ -11,13 +11,24 @@ export default function AddSavingsModal({ isOpen, onClose, goal }) {
 
     const remaining = goal ? (goal.target_amount - goal.current_amount) : 0;
 
+    const handleChange = (e) => {
+        const value = e.target.value.replace(/\D/g, '');
+        if (value === '') {
+            setAmount('');
+            return;
+        }
+        const formatted = new Intl.NumberFormat('id-ID').format(parseInt(value));
+        setAmount(formatted);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!amount || !goal) return;
+        const numericAmount = parseInt(amount.replace(/\./g, ''));
+        if (!numericAmount || !goal) return;
 
         setLoading(true);
         try {
-            await goalService.addSavings(goal.id, parseFloat(amount));
+            await goalService.addSavings(goal.id, numericAmount);
             refetch();
             setAmount('');
             onClose();
@@ -30,6 +41,11 @@ export default function AddSavingsModal({ isOpen, onClose, goal }) {
     };
 
     const quickAmounts = [50000, 100000, 250000, 500000];
+
+    // Helper to set formatted amount
+    const setFormattedAmount = (val) => {
+        setAmount(new Intl.NumberFormat('id-ID').format(val));
+    };
 
     if (!isOpen || !goal) return null;
 
@@ -87,14 +103,13 @@ export default function AddSavingsModal({ isOpen, onClose, goal }) {
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">Rp</span>
                             <input
-                                type="number"
+                                type="text"
+                                inputMode="numeric"
                                 value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
+                                onChange={handleChange}
                                 placeholder="0"
                                 className="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg font-bold"
                                 required
-                                min="1"
-                                max={remaining}
                             />
                         </div>
                     </div>
@@ -109,7 +124,7 @@ export default function AddSavingsModal({ isOpen, onClose, goal }) {
                                 <button
                                     key={quickAmount}
                                     type="button"
-                                    onClick={() => setAmount(quickAmount.toString())}
+                                    onClick={() => setFormattedAmount(quickAmount)}
                                     className="px-2 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg text-xs font-medium transition-all"
                                 >
                                     {(quickAmount / 1000)}K
@@ -119,7 +134,7 @@ export default function AddSavingsModal({ isOpen, onClose, goal }) {
                         {remaining > 0 && (
                             <button
                                 type="button"
-                                onClick={() => setAmount(remaining.toString())}
+                                onClick={() => setFormattedAmount(remaining)}
                                 className="w-full mt-2 px-3 py-2 bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 rounded-lg text-sm font-medium transition-all"
                             >
                                 Lunasi Semua ({formatCurrency(remaining)})

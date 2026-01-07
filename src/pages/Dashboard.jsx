@@ -1,5 +1,7 @@
 import React from 'react';
-import BalanceCard from '../components/dashboard/BalanceCard';
+import CalendarHeader from '../components/dashboard/CalendarHeader';
+import ModernBalanceCard from '../components/dashboard/ModernBalanceCard';
+import IncomeCard from '../components/dashboard/IncomeCard';
 import SummaryCards from '../components/dashboard/SummaryCards';
 import SpendingChart from '../components/dashboard/SpendingChart';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
@@ -10,11 +12,15 @@ import WalletCards from '../components/dashboard/WalletCards';
 import QuickActions from '../components/dashboard/QuickActions';
 
 export default function Dashboard() {
+    const [currentDate, setCurrentDate] = React.useState(new Date());
+
     return (
         <div className="space-y-6 lg:space-y-8 animate-in fade-in duration-500">
 
             <div className="grid grid-cols-1 gap-6">
-                <BalanceCard />
+                <CalendarHeader currentDate={currentDate} onDateChange={setCurrentDate} />
+                <ModernBalanceCard currentDate={currentDate} onDateChange={setCurrentDate} />
+                <IncomeCard currentDate={currentDate} onDateChange={setCurrentDate} />
                 <QuickActions />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <StatsShortcut />
