@@ -18,7 +18,7 @@ export default function Sidebar({ onOpenAdd }) {
     ];
 
     return (
-        <aside className="hidden lg:flex flex-col w-64 h-screen bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 fixed left-0 top-0 overflow-y-auto transition-colors duration-300">
+        <aside className="hidden lg:flex flex-col w-64 h-screen bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 fixed left-0 top-0 overflow-hidden transition-colors duration-300">
             <div className="p-6">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -33,7 +33,7 @@ export default function Sidebar({ onOpenAdd }) {
                 </div>
             </div>
 
-            <nav className="flex-1 px-4 py-2 space-y-2">
+            <nav className="flex-1 px-4 py-2 space-y-2 overflow-y-auto custom-scrollbar">
                 {navItems.map((item) => (
                     <NavLink
                         key={item.to}
