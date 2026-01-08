@@ -128,17 +128,25 @@ export default function AdvancedSearchModal({ isOpen, onClose }) {
                                 <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Nominal</label>
                                 <div className="grid grid-cols-2 gap-3">
                                     <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         placeholder="Min (Rp)"
-                                        value={localFilters.minAmount}
-                                        onChange={(e) => setLocalFilters({ ...localFilters, minAmount: e.target.value })}
+                                        value={Number(localFilters.minAmount) ? Number(localFilters.minAmount).toLocaleString('id-ID') : localFilters.minAmount}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '');
+                                            setLocalFilters({ ...localFilters, minAmount: val });
+                                        }}
                                         className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:text-white text-sm"
                                     />
                                     <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         placeholder="Max (Rp)"
-                                        value={localFilters.maxAmount}
-                                        onChange={(e) => setLocalFilters({ ...localFilters, maxAmount: e.target.value })}
+                                        value={Number(localFilters.maxAmount) ? Number(localFilters.maxAmount).toLocaleString('id-ID') : localFilters.maxAmount}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '');
+                                            setLocalFilters({ ...localFilters, maxAmount: val });
+                                        }}
                                         className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:text-white text-sm"
                                     />
                                 </div>
