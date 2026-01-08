@@ -14,22 +14,18 @@ export default function CalendarHeader({ currentDate, onDateChange }) {
     const daysInMonth = getDaysInMonth(currentDate);
     const days = Array.from({ length: daysInMonth }).map((_, i) => addDays(monthStart, i));
 
-    // Filter transactions for the current month
-    const monthlyTransactions = useMemo(() => {
-        const start = startOfMonth(currentDate);
-        const end = endOfMonth(currentDate);
+    // Filter transactions for the current selected DATE (Daily)
+    const dailyTransactions = useMemo(() => {
         return transactions.filter(t => {
             const date = new Date(t.date);
-            return isWithinInterval(date, { start, end });
+            return isSameDay(date, currentDate);
         });
     }, [transactions, currentDate]);
 
-    const lastTransactionDate = useMemo(() => {
-        if (transactions.length === 0) return null;
-        // Assuming transactions are sorted by date desc in context, or sort here
-        const sorted = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-        return sorted[0].date;
-    }, [transactions]);
+    // Calculate total amount for the day
+    const dailyTotal = useMemo(() => {
+        return dailyTransactions.reduce((acc, curr) => acc + Number(curr.amount), 0);
+    }, [dailyTransactions]);
 
     const scroll = (direction) => {
         if (scrollContainerRef.current) {
@@ -67,9 +63,9 @@ export default function CalendarHeader({ currentDate, onDateChange }) {
                     <span className="text-xs font-semibold">Aktif</span>
                 </div>
                 <div className="text-right">
-                    <p className="text-sm font-medium text-indigo-100">{monthlyTransactions.length} Transaksi</p>
+                    <p className="text-sm font-medium text-indigo-100">{dailyTransactions.length} Transaksi</p>
                     <p className="text-xs text-indigo-200">
-                        Terakhir: {lastTransactionDate ? format(new Date(lastTransactionDate), 'dd MMM', { locale: id }) : '-'}
+                        Total: {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(dailyTotal)}
                     </p>
                 </div>
             </div>

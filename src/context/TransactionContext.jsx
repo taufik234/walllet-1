@@ -209,15 +209,43 @@ export const TransactionProvider = ({ children }) => {
     const [walletFilter, setWalletFilter] = useState('all');
     const [dateFilter, setDateFilter] = useState({ day: '', month: '', year: '' });
 
+    // Advanced Filter State
+    const [advancedFilters, setAdvancedFilters] = useState({
+        isActive: false,
+        startDate: '',
+        endDate: '',
+        minAmount: '',
+        maxAmount: '',
+        categories: [],
+        wallets: [],
+        sortBy: 'newest' // newest, oldest, highest, lowest
+    });
+
     // Filtering Logic
     const filteredTransactions = useMemo(() => {
-        return transactions.filter(t => {
+        let result = transactions.filter(t => {
+            // 1. Basic Filters (Always active unless overridden or cleared)
             const [tYear, tMonth, tDay] = (t.date || '').split('-');
 
-            const matchesYear = !dateFilter.year || tYear === dateFilter.year;
-            const matchesMonth = !dateFilter.month || tMonth === dateFilter.month;
-            const matchesDay = !dateFilter.day || tDay === dateFilter.day;
-            const matchesDate = matchesYear && matchesMonth && matchesDay;
+            // If Advanced Search is NOT active, use the simple Date/Month filter
+            let matchesDate = true;
+            if (!advancedFilters.isActive) {
+                const matchesYear = !dateFilter.year || tYear === dateFilter.year;
+                const matchesMonth = !dateFilter.month || tMonth === dateFilter.month;
+                const matchesDay = !dateFilter.day || tDay === dateFilter.day;
+                matchesDate = matchesYear && matchesMonth && matchesDay;
+            } else {
+                // Advanced Date Range
+                const tDate = new Date(t.date);
+                if (advancedFilters.startDate) {
+                    const start = new Date(advancedFilters.startDate);
+                    if (tDate < start) matchesDate = false;
+                }
+                if (matchesDate && advancedFilters.endDate) {
+                    const end = new Date(advancedFilters.endDate);
+                    if (tDate > end) matchesDate = false;
+                }
+            }
 
             const matchesType = typeFilter === 'all' || t.type === typeFilter;
 
@@ -230,9 +258,61 @@ export const TransactionProvider = ({ children }) => {
                 t.category?.name?.toLowerCase().includes(query) ||
                 t.amount?.toString().includes(query);
 
-            return matchesDate && matchesType && matchesSearch && matchesWallet;
+            // 2. Advanced Filters (Amount & Category)
+            let matchesAdvanced = true;
+            if (advancedFilters.isActive) {
+                // Category (Multi-select)
+                if (advancedFilters.categories.length > 0) {
+                    // Check category_id or category.name (flexible)
+                    const catId = t.category_id;
+                    const catName = t.category?.name; // fallback
+                    // Assuming filter stores IDs or Names. Let's assume IDs.
+                    if (!advancedFilters.categories.includes(catId)) {
+                        matchesAdvanced = false;
+                    }
+                }
+
+                // Wallet (Multi-select) - NEW
+                if (advancedFilters.wallets.length > 0) {
+                    const wId = t.wallet_id;
+                    if (!advancedFilters.wallets.includes(wId)) {
+                        matchesAdvanced = false;
+                    }
+                }
+
+                // Amount Range
+                const amt = Number(t.amount);
+                if (matchesAdvanced && advancedFilters.minAmount && amt < Number(advancedFilters.minAmount)) {
+                    matchesAdvanced = false;
+                }
+                if (matchesAdvanced && advancedFilters.maxAmount && amt > Number(advancedFilters.maxAmount)) {
+                    matchesAdvanced = false;
+                }
+            }
+
+            return matchesDate && matchesType && matchesSearch && matchesWallet && matchesAdvanced;
         });
-    }, [transactions, dateFilter, typeFilter, walletFilter, searchQuery]);
+
+        // 3. Sorting
+        if (advancedFilters.isActive && advancedFilters.sortBy) {
+            result.sort((a, b) => {
+                const dateA = new Date(a.date);
+                const dateB = new Date(b.date);
+                const amtA = Number(a.amount);
+                const amtB = Number(b.amount);
+
+                switch (advancedFilters.sortBy) {
+                    case 'newest': return dateB - dateA; // Descending
+                    case 'oldest': return dateA - dateB; // Ascending
+                    case 'highest': return amtB - amtA;
+                    case 'lowest': return amtA - amtB;
+                    default: return 0;
+                }
+            });
+        }
+
+        return result;
+    }, [transactions, dateFilter, typeFilter, walletFilter, searchQuery, advancedFilters]);
 
     // Grouping Logic
     const groupedTransactions = useMemo(() => {
@@ -324,6 +404,7 @@ export const TransactionProvider = ({ children }) => {
         typeFilter, setTypeFilter,
         dateFilter, setDateFilter,
         walletFilter, setWalletFilter,
+        advancedFilters, setAdvancedFilters,
 
         // Budget
         budgets,
