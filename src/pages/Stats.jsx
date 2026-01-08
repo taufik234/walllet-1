@@ -8,6 +8,7 @@ import { cn } from '../utils/utils';
 export default function Stats() {
     const { transactions, stats } = useTransactions();
     const [timeRange, setTimeRange] = useState('month'); // 'week' | 'month' | 'year'
+    const [reportType, setReportType] = useState('expense'); // 'income' | 'expense'
 
     // Get current date helper
     const now = new Date();
@@ -57,19 +58,19 @@ export default function Stats() {
     const filteredTransactions = useMemo(() => {
         return transactions.filter(t => {
             const d = new Date(t.date);
-            return d >= currentRange.start && d <= currentRange.end && t.type === 'expense';
+            return d >= currentRange.start && d <= currentRange.end && t.type === reportType;
         });
-    }, [transactions, currentRange]);
+    }, [transactions, currentRange, reportType]);
 
     // Trend Data with Comparison
     const trendData = useMemo(() => {
         const data = [];
 
-        // Helper to sum expenses for a specific date
+        // Helper to sum amounts for a specific date
         const getDailyTotal = (dateObj, txns) => {
             const dateStr = dateObj.toISOString().split('T')[0];
             return txns
-                .filter(t => t.type === 'expense' && t.date === dateStr)
+                .filter(t => t.type === reportType && t.date === dateStr)
                 .reduce((acc, curr) => acc + Number(curr.amount), 0);
         };
 
@@ -116,7 +117,7 @@ export default function Stats() {
                     return transactions
                         .filter(t => {
                             const d = new Date(t.date);
-                            return d.getMonth() === mStart.getMonth() && d.getFullYear() === yr && t.type === 'expense';
+                            return d.getMonth() === mStart.getMonth() && d.getFullYear() === yr && t.type === reportType;
                         })
                         .reduce((acc, c) => acc + Number(c.amount), 0);
                 };
@@ -130,7 +131,7 @@ export default function Stats() {
         }
 
         return data;
-    }, [transactions, timeRange, currentRange, prevRange]);
+    }, [transactions, timeRange, currentRange, prevRange, reportType]);
 
     // Data for Pie Chart (Aggregated from filtered)
     const categoryData = useMemo(() => {
@@ -154,57 +155,82 @@ export default function Stats() {
 
     // Colors for the chart
     const COLORS = ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#8b5cf6', '#ef4444', '#10b981'];
+    const themeColor = reportType === 'income' ? '#10b981' : '#6366f1'; // Emerald for income, Indigo for expense
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-24">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Statistik Pengeluaran</h1>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Laporan Keuangan</h1>
 
-                {/* Time Range Filter */}
-                <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <button
-                        onClick={() => setTimeRange('week')}
-                        className={cn(
-                            "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
-                            timeRange === 'week' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                        )}
-                    >
-                        Minggu Ini
-                    </button>
-                    <button
-                        onClick={() => setTimeRange('month')}
-                        className={cn(
-                            "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
-                            timeRange === 'month' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                        )}
-                    >
-                        Bulan Ini
-                    </button>
-                    <button
-                        onClick={() => setTimeRange('year')}
-                        className={cn(
-                            "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
-                            timeRange === 'year' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                        )}
-                    >
-                        Tahun Ini
-                    </button>
+                <div className="flex gap-2">
+                    {/* Report Type Toggle */}
+                    <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <button
+                            onClick={() => setReportType('expense')}
+                            className={cn(
+                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                reportType === 'expense' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                            )}
+                        >
+                            Pengeluaran
+                        </button>
+                        <button
+                            onClick={() => setReportType('income')}
+                            className={cn(
+                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                reportType === 'income' ? "bg-white dark:bg-emerald-600 text-emerald-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                            )}
+                        >
+                            Pemasukan
+                        </button>
+                    </div>
+
+                    {/* Time Range Filter */}
+                    <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <button
+                            onClick={() => setTimeRange('week')}
+                            className={cn(
+                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                timeRange === 'week' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                            )}
+                        >
+                            Minggu Ini
+                        </button>
+                        <button
+                            onClick={() => setTimeRange('month')}
+                            className={cn(
+                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                timeRange === 'month' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                            )}
+                        >
+                            Bulan Ini
+                        </button>
+                        <button
+                            onClick={() => setTimeRange('year')}
+                            className={cn(
+                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                timeRange === 'year' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                            )}
+                        >
+                            Tahun Ini
+                        </button>
+                    </div>
                 </div>
             </div>
             {/* Summary Cards - Grid of Total + Categories */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {/* 1. Total Card (Main Highlight) */}
-                <div className="col-span-2 sm:col-span-1 md:col-span-1 bg-gradient-to-br from-indigo-600 to-indigo-900 border border-indigo-500/50 p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden group shadow-lg shadow-indigo-900/20">
+                <div className={`col-span-2 sm:col-span-1 md:col-span-1 bg-gradient-to-br ${reportType === 'income' ? 'from-emerald-600 to-emerald-900 border-emerald-500/50 shadow-emerald-900/20' : 'from-indigo-600 to-indigo-900 border-indigo-500/50 shadow-indigo-900/20'} border p-4 rounded-2xl flex flex-col justify-between relative overflow-hidden group shadow-lg`}>
                     <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                         <div className="w-20 h-20 bg-white rounded-full blur-2xl"></div>
                     </div>
                     <div>
-                        <p className="text-indigo-200 text-xs font-semibold mb-1 uppercase tracking-wider">Total</p>
+                        <p className={`${reportType === 'income' ? 'text-emerald-200' : 'text-indigo-200'} text-xs font-semibold mb-1 uppercase tracking-wider`}>Total {reportType === 'income' ? 'Pemasukan' : 'Pengeluaran'}</p>
                         <h2 className="text-xl sm:text-2xl font-bold text-white truncate">
                             {formatCurrency(filteredTransactions.reduce((acc, t) => acc + Number(t.amount), 0))}
                         </h2>
                     </div>
-                    <div className="mt-4 text-xs text-indigo-100/80 font-medium">
+                    <div className={`mt-4 text-xs ${reportType === 'income' ? 'text-emerald-100/80' : 'text-indigo-100/80'} font-medium`}>
                         {label}
                     </div>
                 </div>
@@ -238,7 +264,7 @@ export default function Stats() {
                     ))
                 ) : (
                     <div className="col-span-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-dashed p-4 rounded-2xl flex items-center justify-center text-slate-500 text-sm">
-                        Belum ada data
+                        Belum ada data {reportType === 'income' ? 'pemasukan' : 'pengeluaran'} untuk periode ini
                     </div>
                 )}
             </div>
@@ -252,8 +278,8 @@ export default function Stats() {
                                 'Perbandingan: Tahun Ini vs Lalu'}
                     </h3>
                     <div className="flex items-center gap-4 text-xs font-medium">
-                        <div className="flex items-center gap-2 text-indigo-500 dark:text-indigo-400">
-                            <span className="w-2 h-2 rounded-full bg-indigo-500"></span> Current
+                        <div className={`flex items-center gap-2 ${reportType === 'income' ? 'text-emerald-500 dark:text-emerald-400' : 'text-indigo-500 dark:text-indigo-400'}`}>
+                            <span className={`w-2 h-2 rounded-full ${reportType === 'income' ? 'bg-emerald-500' : 'bg-indigo-500'}`}></span> Current
                         </div>
                         <div className="flex items-center gap-2 text-slate-500">
                             <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500"></span> Previous
@@ -266,8 +292,8 @@ export default function Stats() {
                         <AreaChart data={trendData}>
                             <defs>
                                 <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                    <stop offset="5%" stopColor={themeColor} stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor={themeColor} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
@@ -302,7 +328,7 @@ export default function Stats() {
                             <Area
                                 type="monotone"
                                 dataKey="current"
-                                stroke="#6366f1"
+                                stroke={themeColor}
                                 strokeWidth={3}
                                 fillOpacity={1}
                                 fill="url(#colorCurrent)"
