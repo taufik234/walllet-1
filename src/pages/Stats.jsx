@@ -4,6 +4,8 @@ import { useTransactions } from '../context/TransactionContext';
 import { formatCurrency } from '../utils/utils';
 import { CATEGORIES } from '../data/mockData';
 import { cn } from '../utils/utils';
+import { exportToExcel, exportToPDF } from '../utils/exportUtils';
+import { Download, FileSpreadsheet, FileText } from 'lucide-react';
 
 export default function Stats() {
     const { transactions, stats } = useTransactions();
@@ -216,6 +218,24 @@ export default function Stats() {
                         </button>
                     </div>
                 </div>
+            </div>
+
+            {/* Export Buttons */}
+            <div className="flex flex-wrap gap-2">
+                <button
+                    onClick={() => exportToExcel(filteredTransactions, `laporan-${reportType}-${label}`)}
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-emerald-500/20"
+                >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    Export Excel
+                </button>
+                <button
+                    onClick={() => exportToPDF(filteredTransactions, `Laporan ${reportType === 'income' ? 'Pemasukan' : 'Pengeluaran'} - ${label}`, stats)}
+                    className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-rose-500/20"
+                >
+                    <FileText className="w-4 h-4" />
+                    Export PDF
+                </button>
             </div>
             {/* Summary Cards - Grid of Total + Categories */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
