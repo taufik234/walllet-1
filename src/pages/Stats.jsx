@@ -162,13 +162,13 @@ export default function Stats() {
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Laporan Keuangan</h1>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     {/* Report Type Toggle */}
-                    <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="grid grid-cols-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
                         <button
                             onClick={() => setReportType('expense')}
                             className={cn(
-                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                "px-4 py-2 rounded-lg text-sm font-medium transition-all flex justify-center",
                                 reportType === 'expense' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                             )}
                         >
@@ -177,7 +177,7 @@ export default function Stats() {
                         <button
                             onClick={() => setReportType('income')}
                             className={cn(
-                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                "px-4 py-2 rounded-lg text-sm font-medium transition-all flex justify-center",
                                 reportType === 'income' ? "bg-white dark:bg-emerald-600 text-emerald-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                             )}
                         >
@@ -186,33 +186,33 @@ export default function Stats() {
                     </div>
 
                     {/* Time Range Filter */}
-                    <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="grid grid-cols-3 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
                         <button
                             onClick={() => setTimeRange('week')}
                             className={cn(
-                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                "px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex justify-center",
                                 timeRange === 'week' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                             )}
                         >
-                            Minggu Ini
+                            Minggu
                         </button>
                         <button
                             onClick={() => setTimeRange('month')}
                             className={cn(
-                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                "px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex justify-center",
                                 timeRange === 'month' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                             )}
                         >
-                            Bulan Ini
+                            Bulan
                         </button>
                         <button
                             onClick={() => setTimeRange('year')}
                             className={cn(
-                                "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                "px-2 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all flex justify-center",
                                 timeRange === 'year' ? "bg-white dark:bg-indigo-600 text-indigo-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                             )}
                         >
-                            Tahun Ini
+                            Tahun
                         </button>
                     </div>
                 </div>
