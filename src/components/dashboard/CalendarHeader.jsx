@@ -70,64 +70,75 @@ export default function CalendarHeader({ currentDate, onDateChange }) {
                 </div>
             </div>
 
-            {/* Month Navigation */}
-            <div className="flex items-center justify-between mb-8 px-4">
+            {/* Month Navigation - Centered Style */}
+            <div className="flex items-center justify-center gap-8 mb-6">
                 <button
                     onClick={() => onDateChange(addMonths(currentDate, -1))}
-                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors group"
                 >
-                    <ChevronLeft className="w-5 h-5 text-indigo-200" />
+                    <ChevronLeft className="w-6 h-6 text-indigo-100 group-hover:text-white" />
                 </button>
-                <h2 className="text-xl font-bold tracking-tight">
+                <h2 className="text-xl font-bold tracking-tight min-w-[140px] text-center">
                     {format(currentDate, 'MMMM yyyy', { locale: id })}
                 </h2>
                 <button
                     onClick={() => onDateChange(addMonths(currentDate, 1))}
-                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors group"
                 >
-                    <ChevronRight className="w-5 h-5 text-indigo-200" />
+                    <ChevronRight className="w-6 h-6 text-indigo-100 group-hover:text-white" />
                 </button>
             </div>
 
             {/* Days Slider */}
-            <div className="relative group">
+            <div className="relative group px-1">
                 {/* Desktop Scroll Buttons */}
                 <button
                     onClick={() => scroll('left')}
-                    className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 z-10 w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full items-center justify-center transition-opacity opacity-0 group-hover:opacity-100"
+                    className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full items-center justify-center transition-opacity opacity-0 group-hover:opacity-100"
                 >
                     <ChevronLeft className="w-4 h-4 text-white" />
                 </button>
                 <button
                     onClick={() => scroll('right')}
-                    className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 z-10 w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full items-center justify-center transition-opacity opacity-0 group-hover:opacity-100"
+                    className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-8 h-8 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full items-center justify-center transition-opacity opacity-0 group-hover:opacity-100"
                 >
                     <ChevronRight className="w-4 h-4 text-white" />
                 </button>
 
                 <div
                     ref={scrollContainerRef}
-                    className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth pb-2"
+                    className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-smooth pb-2 -mx-2 px-2"
                 >
                     {days.map((day, index) => {
                         const isActive = isSameDay(day, currentDate);
+                        const dayHasTrans = transactions.some(t => isSameDay(new Date(t.date), day));
 
                         return (
                             <button
                                 key={index}
                                 data-active={isActive}
                                 onClick={() => onDateChange(day)}
-                                className={`flex flex-col items-center justify-center min-w-[14.28%] w-[14.28%] flex-shrink-0 snap-center rounded-2xl py-3 transition-all duration-300 ${isActive
-                                    ? 'bg-white text-indigo-600 shadow-lg scale-95 font-bold'
-                                    : 'text-indigo-200 hover:bg-white/10 scale-90'
-                                    }`}
+                                className={`
+                                    flex flex-col items-center justify-center min-w-[14.28%] w-[14.28%] flex-shrink-0 snap-center rounded-2xl py-2 gap-2 transition-all duration-300
+                                    ${isActive ? 'bg-white/10 backdrop-blur-sm' : 'hover:bg-white/5'}
+                                `}
                             >
-                                <span className="text-[10px] uppercase mb-1">
+                                <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-white' : 'text-indigo-200'}`}>
                                     {format(day, 'EEE', { locale: id })}
                                 </span>
-                                <span className="text-lg">
+
+                                <div className={`
+                                    w-9 h-9 flex items-center justify-center rounded-full text-sm font-bold transition-all
+                                    ${isActive
+                                        ? 'bg-emerald-400 text-white shadow-lg shadow-emerald-400/30 scale-110'
+                                        : 'text-white'
+                                    }
+                                `}>
                                     {format(day, 'd')}
-                                </span>
+                                </div>
+
+                                {/* Transaction Dot Indicator */}
+                                <div className={`h-1 w-1 rounded-full ${dayHasTrans && !isActive ? 'bg-emerald-400' : 'bg-transparent'}`} />
                             </button>
                         );
                     })}
