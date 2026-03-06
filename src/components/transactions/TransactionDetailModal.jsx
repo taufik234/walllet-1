@@ -1,13 +1,14 @@
 import React from 'react';
-import { X, Calendar, Wallet, FileText, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, Share2 } from 'lucide-react';
+import { X, Calendar, Wallet, FileText, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, ArrowLeftRight } from 'lucide-react';
 import { formatCurrency, formatDate } from '../../utils/utils';
 import { useTransactions } from '../../context/TransactionContext';
 
 export default function TransactionDetailModal({ isOpen, onClose, transaction }) {
-    const { deleteTransaction, openModal } = useTransactions();
+    const { deleteTransaction, deleteTransfer, openModal } = useTransactions();
 
     if (!isOpen || !transaction) return null;
 
+    const isTransfer = !!transaction.transfer_pair_id;
     const isIncome = transaction.type === 'income';
 
     // Use optional chaining and fallback for Supabase relation objects
@@ -15,8 +16,15 @@ export default function TransactionDetailModal({ isOpen, onClose, transaction })
     const categoryLabel = transaction.category?.name || 'Lainnya';
 
     const handleDelete = () => {
-        if (window.confirm('Yakin ingin menghapus transaksi ini?')) {
-            deleteTransaction(transaction.id);
+        const msg = isTransfer
+            ? 'Yakin ingin menghapus transfer ini? Kedua sisi transfer akan dihapus.'
+            : 'Yakin ingin menghapus transaksi ini?';
+        if (window.confirm(msg)) {
+            if (isTransfer) {
+                deleteTransfer(transaction.transfer_pair_id);
+            } else {
+                deleteTransaction(transaction.id);
+            }
             onClose();
         }
     };
@@ -42,15 +50,23 @@ export default function TransactionDetailModal({ isOpen, onClose, transaction })
                     </button>
 
                     <div className="flex flex-col items-center pt-4 pb-8">
-                        <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-4 ${isIncome ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-500 dark:text-rose-400'
+                        <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-4 ${
+                            isTransfer
+                                ? 'bg-blue-500/10 text-blue-500 dark:text-blue-400'
+                                : isIncome
+                                    ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400'
+                                    : 'bg-rose-500/10 text-rose-500 dark:text-rose-400'
                             }`}>
-                            {isIncome ? <ArrowUpCircle className="w-8 h-8" /> : <ArrowDownCircle className="w-8 h-8" />}
+                            {isTransfer
+                                ? <ArrowLeftRight className="w-8 h-8" />
+                                : isIncome
+                                    ? <ArrowUpCircle className="w-8 h-8" />
+                                    : <ArrowDownCircle className="w-8 h-8" />}
                         </div>
                         <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">
-                            {isIncome ? 'Pemasukan' : 'Pengeluaran'}
+                            {isTransfer ? 'Transfer' : isIncome ? 'Pemasukan' : 'Pengeluaran'}
                         </p>
-                        <h2 className={`text-3xl font-bold ${isIncome ? 'text-slate-900 dark:text-white' : 'text-slate-900 dark:text-white'
-                            }`}>
+                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
                             {formatCurrency(transaction.amount)}
                         </h2>
                     </div>
@@ -67,20 +83,22 @@ export default function TransactionDetailModal({ isOpen, onClose, transaction })
                         </div>
                         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/50 pb-3">
                             <span className="text-slate-500 text-sm flex items-center gap-2">
-                                <Wallet className="w-4 h-4" /> Sumber
+                                <Wallet className="w-4 h-4" /> {isTransfer ? 'Dompet' : 'Sumber'}
                             </span>
                             <span className="text-slate-900 dark:text-slate-200 font-medium text-sm capitalize">
                                 {WalletLabel}
                             </span>
                         </div>
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/50 pb-3">
-                            <span className="text-slate-500 text-sm flex items-center gap-2">
-                                <FileText className="w-4 h-4" /> Kategori
-                            </span>
-                            <span className="text-slate-900 dark:text-slate-200 font-medium text-sm capitalize">
-                                {categoryLabel}
-                            </span>
-                        </div>
+                        {!isTransfer && (
+                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/50 pb-3">
+                                <span className="text-slate-500 text-sm flex items-center gap-2">
+                                    <FileText className="w-4 h-4" /> Kategori
+                                </span>
+                                <span className="text-slate-900 dark:text-slate-200 font-medium text-sm capitalize">
+                                    {categoryLabel}
+                                </span>
+                            </div>
+                        )}
                         {transaction.note && (
                             <div className="pt-1">
                                 <p className="text-slate-500 text-xs mb-1">Catatan</p>
@@ -90,18 +108,20 @@ export default function TransactionDetailModal({ isOpen, onClose, transaction })
                     </div>
 
                     {/* Actions */}
-                    <div className="grid grid-cols-2 gap-3 mt-6">
-                        <button
-                            onClick={handleEdit}
-                            className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-500 dark:text-indigo-400 font-medium py-3 rounded-xl transition-colors"
-                        >
-                            <Pencil className="w-4 h-4" /> Edit
-                        </button>
+                    <div className={`grid gap-3 mt-6 ${isTransfer ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                        {!isTransfer && (
+                            <button
+                                onClick={handleEdit}
+                                className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-500 dark:text-indigo-400 font-medium py-3 rounded-xl transition-colors"
+                            >
+                                <Pencil className="w-4 h-4" /> Edit
+                            </button>
+                        )}
                         <button
                             onClick={handleDelete}
                             className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-500 dark:text-rose-400 font-medium py-3 rounded-xl transition-colors"
                         >
-                            <Trash2 className="w-4 h-4" /> Hapus
+                            <Trash2 className="w-4 h-4" /> Hapus {isTransfer ? 'Transfer' : ''}
                         </button>
                     </div>
                 </div>

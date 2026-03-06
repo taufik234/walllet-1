@@ -57,13 +57,12 @@ export const authService = {
 // TRANSACTION SERVICES
 // ============================================
 export const transactionService = {
-    async list({ type, walletId, startDate, endDate, limit = 100 } = {}) {
+    async list({ type, walletId, startDate, endDate } = {}) {
         let query = supabase
             .from('transactions')
             .select('*, wallet:wallets(*), category:categories(*)')
             .order('date', { ascending: false })
-            .order('created_at', { ascending: false })
-            .limit(limit);
+            .order('created_at', { ascending: false });
 
         if (type) query = query.eq('type', type);
         if (walletId) query = query.eq('wallet_id', walletId);
@@ -315,25 +314,17 @@ export const budgetService = {
 };
 
 // ============================================
-// STATS SERVICES
+// STATS SERVICES (Server-side calculation via RPC)
 // ============================================
 export const statsService = {
-    async getSummary(startDate = null, endDate = null) {
-        const transactions = await transactionService.list({ startDate, endDate });
-
-        const income = transactions
-            .filter(t => t.type === 'income')
-            .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-
-        const expense = transactions
-            .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-
-        return {
-            totalBalance: income - expense,
-            totalIncome: income,
-            totalExpense: expense,
-        };
+    /**
+     * Get user stats calculated by PostgreSQL.
+     * Returns { global: { totalIncome, totalExpense, totalBalance }, wallets: { walletId: balance } }
+     */
+    async getStats() {
+        const { data, error } = await supabase.rpc('get_user_stats');
+        if (error) throw error;
+        return data;
     },
 
     async getByCategory(startDate = null, endDate = null) {
@@ -442,3 +433,61 @@ export const goalService = {
         if (error) throw error;
     },
 };
+
+// ============================================
+// TRANSFER SERVICES
+// ============================================
+export const transferService = {
+    /**
+     * Create a transfer between two wallets.
+     * Inserts two linked transactions (expense on source, income on destination)
+     * sharing the same transfer_pair_id UUID.
+     */
+    async create({ fromWalletId, toWalletId, amount, date, note }) {
+        const { data: { user } } = await supabase.auth.getUser();
+        const transferPairId = crypto.randomUUID();
+        const today = date || new Date().toISOString().split('T')[0];
+        const label = note || 'Transfer';
+
+        const rows = [
+            {
+                user_id: user.id,
+                type: 'expense',
+                amount: Number(amount),
+                wallet_id: fromWalletId,
+                date: today,
+                note: label,
+                transfer_pair_id: transferPairId,
+            },
+            {
+                user_id: user.id,
+                type: 'income',
+                amount: Number(amount),
+                wallet_id: toWalletId,
+                date: today,
+                note: label,
+                transfer_pair_id: transferPairId,
+            },
+        ];
+
+        const { data, error } = await supabase
+            .from('transactions')
+            .insert(rows)
+            .select('*, wallet:wallets(*), category:categories(*)');
+
+        if (error) throw error;
+        return { transferPairId, transactions: data };
+    },
+
+    /**
+     * Delete both sides of a transfer by transfer_pair_id.
+     */
+    async delete(transferPairId) {
+        const { error } = await supabase
+            .from('transactions')
+            .delete()
+            .eq('transfer_pair_id', transferPairId);
+        if (error) throw error;
+    },
+};
+

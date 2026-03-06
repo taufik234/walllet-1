@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTransactions } from '../../context/TransactionContext';
 import { cn, formatCurrency, formatDate } from '../../utils/utils';
-import { Wallet, ShoppingBag, Utensils, Car, Film, Gift, TrendingUp, MoreHorizontal, Trash2, Pencil, Heart, GraduationCap, Receipt, Briefcase } from 'lucide-react';
+import { Wallet, ShoppingBag, Utensils, Car, Film, Gift, TrendingUp, MoreHorizontal, Trash2, Pencil, Heart, GraduationCap, Receipt, Briefcase, ArrowLeftRight } from 'lucide-react';
 import TransactionDetailModal from './TransactionDetailModal';
 
 // Helper to get icon (duplicated for now, could be shared)
@@ -72,8 +72,33 @@ export default function TransactionList() {
     };
 
     const TransactionItem = ({ trx }) => {
+        const isTransfer = !!trx.transfer_pair_id;
         const categoryName = trx.category?.name || 'Lainnya';
-        const Icon = getIcon(categoryName);
+        const Icon = isTransfer ? ArrowLeftRight : getIcon(categoryName);
+
+        // Transfer label: show direction
+        const transferLabel = isTransfer
+            ? (trx.type === 'expense'
+                ? `Transfer ke ${trx.wallet?.name || '...'}`
+                : `Transfer dari ${trx.wallet?.name || '...'}`)
+            : null;
+
+        const colorClass = isTransfer
+            ? 'bg-blue-500/10 text-blue-500 dark:text-blue-400'
+            : trx.type === 'income'
+                ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400'
+                : 'bg-rose-500/10 text-rose-500 dark:text-rose-400';
+
+        const amountColorClass = isTransfer
+            ? 'text-blue-500 dark:text-blue-400'
+            : trx.type === 'income'
+                ? 'text-emerald-500 dark:text-emerald-400'
+                : 'text-rose-500 dark:text-rose-400';
+
+        const amountPrefix = isTransfer
+            ? (trx.type === 'expense' ? '→' : '←')
+            : (trx.type === 'income' ? '+' : '-');
+
         return (
             <div
                 onClick={() => setViewTransaction(trx)}
@@ -81,26 +106,29 @@ export default function TransactionList() {
             >
                 <div className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
-                    trx.type === 'income' ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400" : "bg-rose-500/10 text-rose-500 dark:text-rose-400"
+                    colorClass
                 )}>
                     <Icon className="w-5 h-5" />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <p className="text-slate-900 dark:text-white font-medium capitalize truncate pr-8">{trx.note || categoryName}</p>
+                    <p className="text-slate-900 dark:text-white font-medium capitalize truncate pr-8">
+                        {trx.note || (isTransfer ? 'Transfer' : categoryName)}
+                    </p>
                     <p className="text-xs text-slate-500 flex items-center gap-1">
-                        <span className="capitalize">{categoryName}</span>
+                        {isTransfer ? (
+                            <span className="text-blue-500 dark:text-blue-400 font-medium">{transferLabel}</span>
+                        ) : (
+                            <span className="capitalize">{categoryName}</span>
+                        )}
                         <span className="text-slate-400 dark:text-slate-600">•</span>
                         <span className="capitalize">{trx.wallet?.name || 'Tunai'}</span>
                         {!shouldGroup && <span className="text-slate-400 dark:text-slate-600">• {formatDate(trx.date)}</span>}
                     </p>
                 </div>
 
-                <div className={cn(
-                    "font-bold whitespace-nowrap text-right",
-                    trx.type === 'income' ? "text-emerald-500 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"
-                )}>
-                    {trx.type === 'income' ? '+' : '-'} {formatCurrency(trx.amount)}
+                <div className={cn("font-bold whitespace-nowrap text-right", amountColorClass)}>
+                    {amountPrefix} {formatCurrency(trx.amount)}
                 </div>
             </div>
         );

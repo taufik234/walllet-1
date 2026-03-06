@@ -35,10 +35,10 @@ export default function Sidebar({ onOpenAdd, isOpen, onClose }) {
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                                <Wallet className="w-6 h-6 text-white" />
+                            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 overflow-hidden">
+                                <img src="/icon1.png" alt="Logo" className="w-full h-full object-cover" />
                             </div>
-                            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">FinDashboard</h1>
+                            <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">My duit gw</h1>
                         </div>
                         {/* Close button for mobile */}
                         <button

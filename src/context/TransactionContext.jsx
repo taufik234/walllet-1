@@ -5,7 +5,9 @@ import {
     walletService,
     budgetService,
     categoryService,
-    goalService
+    goalService,
+    transferService,
+    statsService
 } from '../lib/services';
 import { supabase } from '../lib/supabase';
 
@@ -45,6 +47,8 @@ export const TransactionProvider = ({ children }) => {
     const [categories, setCategories] = useState({ income: [], expense: [] });
     const [budgets, setBudgets] = useState([]);
     const [goals, setGoals] = useState([]);
+    const [stats, setStats] = useState({ totalBalance: 0, totalIncome: 0, totalExpense: 0 });
+    const [walletStats, setWalletStats] = useState({});
     const [loading, setLoading] = useState(true);
 
     // Fetch all data from Supabase
@@ -60,12 +64,13 @@ export const TransactionProvider = ({ children }) => {
 
         try {
             setLoading(true);
-            const [txData, walletData, catData, budgetData, goalData] = await Promise.all([
+            const [txData, walletData, catData, budgetData, goalData, userStats] = await Promise.all([
                 transactionService.list(),
                 walletService.list(),
                 categoryService.getGrouped(),
                 budgetService.getWithStats(),
                 goalService.list(),
+                statsService.getStats(),
             ]);
 
             setTransactions(txData || []);
@@ -73,6 +78,12 @@ export const TransactionProvider = ({ children }) => {
             setCategories(catData || { income: [], expense: [] });
             setBudgets(budgetData || []);
             setGoals(goalData || []);
+
+            // Set stats from database calculation
+            if (userStats) {
+                setStats(userStats.global || { totalBalance: 0, totalIncome: 0, totalExpense: 0 });
+                setWalletStats(userStats.wallets || {});
+            }
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -173,46 +184,35 @@ export const TransactionProvider = ({ children }) => {
         }
     };
 
-    // Stats Calculation
-    const stats = useMemo(() => {
-        const income = transactions
-            .filter(t => t.type === 'income')
-            .reduce((acc, curr) => acc + Number(curr.amount), 0);
+    // Transfer CRUD
+    const addTransfer = async ({ fromWalletId, toWalletId, amount, date, note }) => {
+        try {
+            const { transactions: newTxs } = await transferService.create({
+                fromWalletId,
+                toWalletId,
+                amount,
+                date,
+                note,
+            });
+            setTransactions(prev => [...newTxs, ...prev]);
+            return newTxs;
+        } catch (error) {
+            console.error('Error adding transfer:', error);
+            throw error;
+        }
+    };
 
-        const expense = transactions
-            .filter(t => t.type === 'expense')
-            .reduce((acc, curr) => acc + Number(curr.amount), 0);
+    const deleteTransfer = async (transferPairId) => {
+        try {
+            await transferService.delete(transferPairId);
+            setTransactions(prev => prev.filter(t => t.transfer_pair_id !== transferPairId));
+        } catch (error) {
+            console.error('Error deleting transfer:', error);
+            throw error;
+        }
+    };
 
-        return {
-            totalBalance: income - expense,
-            totalIncome: income,
-            totalExpense: expense
-        };
-    }, [transactions]);
 
-    // Wallet Stats Calculation
-    const walletStats = useMemo(() => {
-        const statsObj = {};
-        
-        wallets.forEach(w => {
-            statsObj[w.id] = 0;
-        });
-
-        transactions.forEach(t => {
-            if (!t.wallet_id) return; // ignore transactions without wallet
-
-            const walletId = t.wallet_id;
-            const amount = Number(t.amount);
-            
-            if (t.type === 'income') {
-                statsObj[walletId] = (statsObj[walletId] || 0) + amount;
-            } else {
-                statsObj[walletId] = (statsObj[walletId] || 0) - amount;
-            }
-        });
-
-        return statsObj;
-    }, [transactions, wallets]);
 
     // Filter State
     const [searchQuery, setSearchQuery] = useState('');
@@ -408,6 +408,10 @@ export const TransactionProvider = ({ children }) => {
         stats,
         groupedTransactions,
         filteredTransactions,
+
+        // Transfer
+        addTransfer,
+        deleteTransfer,
 
         // Filters
         searchQuery, setSearchQuery,

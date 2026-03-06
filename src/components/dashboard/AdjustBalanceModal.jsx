@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check } from 'lucide-react';
 import { useTransactions } from '../../context/TransactionContext';
-import { WALLETS } from '../../data/mockData';
 
 export default function AdjustBalanceModal({ isOpen, onClose, walletId, currentBalance }) {
-    const { addTransaction } = useTransactions();
+    const { addTransaction, wallets, categories } = useTransactions();
     const [amount, setAmount] = useState('');
 
     useEffect(() => {
@@ -15,7 +14,7 @@ export default function AdjustBalanceModal({ isOpen, onClose, walletId, currentB
 
     if (!isOpen) return null;
 
-    const walletLabel = WALLETS.find(w => w.id === walletId)?.label || 'Wallet';
+    const walletLabel = wallets.find(w => w.id === walletId)?.name || 'Wallet';
 
     const handleAmountChange = (e) => {
         const cleanValue = e.target.value.replace(/\D/g, '');
@@ -37,13 +36,20 @@ export default function AdjustBalanceModal({ isOpen, onClose, walletId, currentB
             return;
         }
 
+        const type = diff > 0 ? 'income' : 'expense';
+        
+        // Find the "Lainnya" category ID for this type dynamically
+        const typeCategories = categories[type] || [];
+        const lainnyaCategory = typeCategories.find(c => c.name?.toLowerCase() === 'lainnya');
+        const categoryId = lainnyaCategory ? lainnyaCategory.id : null;
+
         const transactionData = {
-            type: diff > 0 ? 'income' : 'expense',
+            type,
             amount: Math.abs(diff),
-            category: 'lainnya',
+            category_id: categoryId,
             date: new Date().toISOString().split('T')[0],
             note: 'Penyesuaian Saldo Manual',
-            wallet: walletId,
+            wallet_id: walletId,
         };
 
         addTransaction(transactionData);
@@ -93,3 +99,4 @@ export default function AdjustBalanceModal({ isOpen, onClose, walletId, currentB
         </div>
     );
 }
+

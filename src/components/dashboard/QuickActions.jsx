@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Utensils, Car, Coffee, ShoppingBag, Zap, Briefcase, ArrowLeftRight } from 'lucide-react';
 import { useTransactions } from '../../context/TransactionContext';
+import TransferModal from '../transactions/TransferModal';
 
 export default function QuickActions() {
     const { openModal } = useTransactions();
     const navigate = useNavigate();
+    const [isTransferOpen, setIsTransferOpen] = useState(false);
 
     const actions = [
         {
@@ -61,6 +63,15 @@ export default function QuickActions() {
                     <span className="text-sm font-bold">Riwayat</span>
                 </button>
 
+                {/* Transfer Button */}
+                <button
+                    onClick={() => setIsTransferOpen(true)}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl border border-blue-500/20 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 dark:text-blue-400 transition-all active:scale-95 whitespace-nowrap shadow-sm dark:shadow-none"
+                >
+                    <ArrowLeftRight className="w-4 h-4" />
+                    <span className="text-sm font-medium">Transfer</span>
+                </button>
+
                 {actions.map((action, idx) => {
                     const Icon = action.icon;
                     return (
@@ -75,7 +86,11 @@ export default function QuickActions() {
                     );
                 })}
             </div>
-            {/* Scroll indicator hint if needed, but horizontal scroll is standard on mobile */}
+
+            <TransferModal
+                isOpen={isTransferOpen}
+                onClose={() => setIsTransferOpen(false)}
+            />
         </div>
     );
 }
