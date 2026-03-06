@@ -45,7 +45,7 @@ export default function BottomNav({ onOpenAdd }) {
     ];
 
     return (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-950/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-safe z-50 shadow-[0_-5px_10px_rgba(0,0,0,0.05)] dark:shadow-none transition-colors duration-300">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-slate-950/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 pb-safe z-40 shadow-[0_-5px_10px_rgba(0,0,0,0.05)] dark:shadow-none transition-colors duration-300">
             <div className="flex justify-around items-center h-16 px-2">
                 {navItems.map((item) => {
                     if (item.isAction) {
