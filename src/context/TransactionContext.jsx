@@ -131,12 +131,17 @@ export const TransactionProvider = ({ children }) => {
     // Transaction CRUD
     const addTransaction = async (transaction) => {
         try {
+            const walletId = transaction.wallet_id || transaction.walletId;
+            if (!walletId) {
+                throw new Error("Wallet harus dipilih");
+            }
+
             const newTx = await transactionService.create({
                 type: transaction.type,
                 amount: transaction.amount,
                 date: transaction.date || new Date().toISOString().split('T')[0],
                 note: transaction.note,
-                wallet_id: transaction.wallet_id || transaction.walletId,
+                wallet_id: walletId,
                 category_id: transaction.category_id || transaction.categoryId,
             });
             setTransactions(prev => [newTx, ...prev]);
@@ -188,11 +193,17 @@ export const TransactionProvider = ({ children }) => {
     // Wallet Stats Calculation
     const walletStats = useMemo(() => {
         const statsObj = {};
-        wallets.forEach(w => statsObj[w.id] = 0);
+        
+        wallets.forEach(w => {
+            statsObj[w.id] = 0;
+        });
 
         transactions.forEach(t => {
-            const walletId = t.wallet_id || 'cash';
+            if (!t.wallet_id) return; // ignore transactions without wallet
+
+            const walletId = t.wallet_id;
             const amount = Number(t.amount);
+            
             if (t.type === 'income') {
                 statsObj[walletId] = (statsObj[walletId] || 0) + amount;
             } else {
@@ -249,8 +260,7 @@ export const TransactionProvider = ({ children }) => {
 
             const matchesType = typeFilter === 'all' || t.type === typeFilter;
 
-            const tWallet = t.wallet_id || 'cash';
-            const matchesWallet = walletFilter === 'all' || tWallet === walletFilter;
+            const matchesWallet = walletFilter === 'all' || t.wallet_id === walletFilter;
 
             const query = searchQuery.toLowerCase();
             const matchesSearch =
