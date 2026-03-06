@@ -105,12 +105,12 @@ export default function TransferModal({ isOpen, onClose }) {
     );
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300 relative transition-colors">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-200 p-0 sm:p-4">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 sm:zoom-in-95 duration-300 relative transition-colors flex flex-col max-h-[90vh]">
                 {/* Header Gradient Bar */}
-                <div className="h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500" />
+                <div className="h-1.5 shrink-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500" />
 
-                <div className="p-6">
+                <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
