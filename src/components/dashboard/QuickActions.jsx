@@ -6,21 +6,27 @@ import TransferModal from '@/components/transactions/TransferModal';
 import { useState } from 'react';
 
 export default function QuickActions() {
-  const { openModal } = useTransactions();
+  const { openModal, categories } = useTransactions();
   const navigate = useNavigate();
   const [isTransferOpen, setIsTransferOpen] = useState(false);
 
-  const actions = [
-    { label: 'Makan', icon: Utensils, data: { type: 'expense', category: 'makan', note: 'Makan Siang', wallet: 'cash' } },
-    { label: 'Transport', icon: Car, data: { type: 'expense', category: 'transport', note: 'Bensin / Ojol', wallet: 'ewallet' } },
-    { label: 'Kopi', icon: Coffee, data: { type: 'expense', category: 'makan', note: 'Ngopi', wallet: 'ewallet' } },
-    { label: 'Mart', icon: ShoppingBag, data: { type: 'expense', category: 'belanja', note: 'Minimarket', wallet: 'cash' } },
-    { label: 'Tagihan', icon: Zap, data: { type: 'expense', category: 'tagihan', note: 'Listrik / Air', wallet: 'bank' } },
+  const findCatId = (name) => {
+    const cat = (categories?.expense || []).find(c => c.name?.toLowerCase() === name.toLowerCase());
+    return cat?._id || '';
+  };
+
+  const CAT_MAP = [
+    { label: 'Makan', icon: Utensils, name: 'Makan', note: 'Makan Siang' },
+    { label: 'Transport', icon: Car, name: 'Transport', note: 'Bensin / Ojol' },
+    { label: 'Kopi', icon: Coffee, name: 'Makan', note: 'Ngopi' },
+    { label: 'Mart', icon: ShoppingBag, name: 'Belanja', note: 'Minimarket' },
+    { label: 'Tagihan', icon: Zap, name: 'Tagihan', note: 'Listrik / Air' },
   ];
 
   const handleAction = (data) => {
     const today = new Date().toISOString().split('T')[0];
-    openModal({ ...data, date: today }, true);
+    const cat = (categories?.expense || []).find(c => c.name?.toLowerCase() === data.name.toLowerCase());
+    openModal({ type: data.type, category_id: cat?._id || '', note: data.note, wallet: 'cash', date: today, category: cat?._id || '' }, true);
   };
 
   return (
@@ -43,14 +49,14 @@ export default function QuickActions() {
           <ArrowRightLeft className="w-4 h-4" />
           Transfer
         </Button>
-        {actions.map((action, idx) => {
+        {CAT_MAP.map((action, idx) => {
           const Icon = action.icon;
           return (
             <Button
               key={idx}
               variant="ghost"
               className="flex items-center gap-2 shrink-0 h-10 rounded-xl bg-muted/30 hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-all duration-200"
-              onClick={() => handleAction(action.data)}
+              onClick={() => handleAction(action)}
             >
               <Icon className="w-4 h-4" />
               {action.label}
