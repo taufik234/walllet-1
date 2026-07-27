@@ -14,7 +14,7 @@ export default function AdjustBalanceModal({ isOpen, onClose, walletId, currentB
     }
   }, [isOpen, currentBalance]);
 
-  const walletLabel = wallets.find(w => w.id === walletId)?.name || 'Wallet';
+  const walletLabel = wallets.find(w => w._id === walletId)?.name || 'Wallet';
 
   const handleAmountChange = (e) => {
     const cleanValue = e.target.value.replace(/\D/g, '');
