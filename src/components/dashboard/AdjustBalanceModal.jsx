@@ -17,8 +17,13 @@ export default function AdjustBalanceModal({ isOpen, onClose, walletId, currentB
   const walletLabel = wallets.find(w => w._id === walletId)?.name || 'Wallet';
 
   const handleAmountChange = (e) => {
-    const cleanValue = e.target.value.replace(/\D/g, '');
-    setAmount(cleanValue ? new Intl.NumberFormat('id-ID').format(cleanValue) : '');
+    const { selectionStart, value } = e.target;
+    const raw = value.replace(/\D/g, '');
+    const formatted = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
+    const diff = formatted.length - value.length;
+    const pos = Math.max(0, (selectionStart || 0) + diff);
+    setAmount(formatted);
+    requestAnimationFrame(() => e.target.setSelectionRange(pos, pos));
   };
 
   const handleSubmit = (e) => {
