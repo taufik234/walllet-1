@@ -1,6 +1,35 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
+const DEFAULT_CATEGORIES = {
+  expense: [
+    "Makan", "Transport", "Belanja", "Tagihan", "Hiburan",
+    "Kesehatan", "Pendidikan", "Subscription", "Lainnya",
+  ],
+  income: [
+    "Gaji", "Bonus", "Freelance", "Investasi", "Lainnya",
+  ],
+};
+
+export const seedIfEmpty = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const existing = await ctx.db.query("categories").take(1);
+    if (existing.length > 0) return { seeded: false };
+
+    const created = [];
+    for (const name of DEFAULT_CATEGORIES.expense) {
+      const id = await ctx.db.insert("categories", { type: "expense", name });
+      created.push({ id, type: "expense", name });
+    }
+    for (const name of DEFAULT_CATEGORIES.income) {
+      const id = await ctx.db.insert("categories", { type: "income", name });
+      created.push({ id, type: "income", name });
+    }
+    return { seeded: true, created };
+  },
+});
+
 export const list = query({
   args: { type: v.optional(v.union(v.literal("income"), v.literal("expense"))) },
   handler: async (ctx, args) => {

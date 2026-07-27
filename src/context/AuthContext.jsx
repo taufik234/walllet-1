@@ -51,6 +51,8 @@ export const AuthProvider = ({ children }) => {
       const result = await convex.mutation(api.users.registerUser, { name, email, password });
       localStorage.setItem(TOKEN_KEY, result.token);
       setUser(result.user);
+      // Seed default categories for new user
+      convex.mutation(api.categories.seedIfEmpty, {}).catch(() => {});
     },
     [convex]
   );
