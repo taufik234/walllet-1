@@ -46,15 +46,15 @@ export default function Budget() {
       <Card className="p-6">
         <h2 className="text-xs font-medium text-muted-foreground mb-1">Monthly Budget</h2>
         <p className="text-3xl font-bold text-foreground font-mono">{formatCurrency(g.totalLimit)}</p>
-        <div className="my-5 rounded-xl bg-muted/50">
+        <div className="my-5 rounded-xl border border-border bg-background">
           <div className="grid grid-cols-2 divide-x divide-border">
             <div className="p-4">
               <p className="text-xs text-muted-foreground">Spent</p>
-              <p className={`text-lg font-bold font-mono ${isOver ? 'text-destructive' : 'text-foreground'}`}>{formatCurrency(g.totalSpent)}</p>
+              <p className="text-lg font-bold font-mono text-expense">{formatCurrency(g.totalSpent)}</p>
             </div>
             <div className="p-4">
               <p className="text-xs text-muted-foreground">Remaining</p>
-              <p className={`text-lg font-bold font-mono ${g.totalRemaining < 0 ? 'text-destructive' : 'text-foreground'}`}>{formatCurrency(g.totalRemaining)}</p>
+              <p className={`text-lg font-bold font-mono ${g.totalRemaining < 0 ? 'text-expense' : 'text-income'}`}>{formatCurrency(g.totalRemaining)}</p>
             </div>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function Budget() {
 
       <div className="space-y-2">
         {budgetStats.map((item) => (
-          <Card key={item.id} className="p-4">
+          <Card key={item._id || item.id} className="p-4">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm font-medium text-foreground capitalize flex items-center gap-2">
