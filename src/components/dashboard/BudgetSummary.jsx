@@ -8,26 +8,26 @@ import { Wallet } from 'lucide-react';
 
 function Skeleton() {
   return (
-    <Card className="p-5">
+    <Card className="p-4 sm:p-5">
       <div className="flex items-center justify-between mb-4">
-        <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-        <div className="h-3 w-14 bg-muted rounded animate-pulse" />
+        <div className="h-4 w-14 sm:w-16 bg-muted rounded animate-pulse" />
+        <div className="h-3 w-12 sm:w-14 bg-muted rounded animate-pulse" />
       </div>
       <div className="mb-3">
         <div className="flex justify-between mb-1">
-          <div className="h-3 w-32 bg-muted rounded animate-pulse" />
-          <div className="h-3 w-8 bg-muted rounded animate-pulse" />
+          <div className="h-3 w-28 sm:w-32 bg-muted rounded animate-pulse" />
+          <div className="h-3 w-6 sm:w-8 bg-muted rounded animate-pulse" />
         </div>
         <div className="h-2 bg-muted rounded-full animate-pulse" />
       </div>
       <div className="grid grid-cols-2 divide-x divide-border border-t border-border pt-3">
         <div>
-          <div className="h-3 w-12 bg-muted rounded animate-pulse mb-1" />
-          <div className="h-5 w-20 bg-muted rounded animate-pulse" />
+          <div className="h-3 w-10 sm:w-12 bg-muted rounded animate-pulse mb-1" />
+          <div className="h-4 sm:h-5 w-16 sm:w-20 bg-muted rounded animate-pulse" />
         </div>
         <div className="pl-3">
-          <div className="h-3 w-16 bg-muted rounded animate-pulse mb-1" />
-          <div className="h-5 w-20 bg-muted rounded animate-pulse" />
+          <div className="h-3 w-14 sm:w-16 bg-muted rounded animate-pulse mb-1" />
+          <div className="h-4 sm:h-5 w-16 sm:w-20 bg-muted rounded animate-pulse" />
         </div>
       </div>
     </Card>
@@ -36,20 +36,20 @@ function Skeleton() {
 
 export default function BudgetSummary() {
   const { budgetStats } = useTransactions();
-  if (!budgetStats) return <Skeleton />;
-
   const g = useMemo(() => {
     const tl = budgetStats.reduce((a,c)=>a+Number(c.limitAmount||0),0);
     const ts = budgetStats.reduce((a,c)=>a+c.spent,0);
     return{totalLimit:tl,totalSpent:ts,totalRemaining:tl-ts,percentage:tl>0?(ts/tl)*100:0};
   }, [budgetStats]);
 
+  if (!budgetStats) return <Skeleton />;
+
   if (g.totalLimit === 0) {
     return (
-      <Card className="p-5 text-center">
-        <Wallet size={32} strokeWidth={1} className="text-muted-foreground mx-auto mb-2" />
-        <p className="text-sm font-medium text-muted-foreground">Belum ada budget</p>
-        <Link to="/budget" className="text-sm font-medium text-primary hover:text-primary/80 mt-1.5 inline-block">Atur Budget &rarr;</Link>
+      <Card className="p-4 sm:p-5 text-center">
+        <Wallet size={24} strokeWidth={1} className="text-muted-foreground mx-auto mb-2" />
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Belum ada budget</p>
+        <Link to="/budget" className="text-xs sm:text-sm font-medium text-primary hover:text-primary/80 mt-1.5 inline-block">Atur Budget &rarr;</Link>
       </Card>
     );
   }
@@ -57,22 +57,22 @@ export default function BudgetSummary() {
   const isOver = g.percentage > 100;
 
   return (
-    <Card className="p-5">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="p-4 sm:p-5">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div className="flex items-center gap-2">
-          <Wallet size={16} strokeWidth={1.5} className="text-primary" />
-          <h3 className="text-sm font-semibold text-foreground">Budget</h3>
+          <Wallet size={14} strokeWidth={1.5} className="text-primary shrink-0" />
+          <h3 className="text-xs sm:text-sm font-semibold text-foreground">Budget</h3>
         </div>
-        <Link to="/budget" className="text-xs font-medium text-primary hover:text-primary/80">Details &rarr;</Link>
+        <Link to="/budget" className="text-[11px] sm:text-xs font-medium text-primary hover:text-primary/80">Details &rarr;</Link>
       </div>
       <div className="mb-3">
-        <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+        <div className="flex justify-between text-[11px] sm:text-xs text-muted-foreground mb-1.5">
           <span>Limit: <span className="font-semibold text-foreground font-mono">{formatCurrency(g.totalLimit)}</span></span>
           <span className={`font-semibold ${isOver ? 'text-expense' : g.percentage > 80 ? 'text-primary' : 'text-muted-foreground'}`}>
             {Math.min(g.percentage, 100).toFixed(0)}%
           </span>
         </div>
-        <Progress value={Math.min(g.percentage, 100)} className="h-2 rounded-full bg-muted">
+        <Progress value={Math.min(g.percentage, 100)} className="h-1.5 sm:h-2 rounded-full bg-muted">
           <ProgressIndicator
             className={`rounded-full transition-all duration-500 ${
               isOver
@@ -85,16 +85,16 @@ export default function BudgetSummary() {
           />
         </Progress>
       </div>
-      <div className="grid grid-cols-2 divide-x divide-border border-t border-border pt-3 mt-3">
+      <div className="grid grid-cols-2 divide-x divide-border border-t border-border pt-2.5 sm:pt-3 mt-2.5 sm:mt-3">
         <div>
-          <p className="text-xs text-muted-foreground">Terpakai</p>
-          <p className={`text-base font-semibold font-mono mt-0.5 ${isOver ? 'text-destructive' : 'text-foreground'}`}>
+          <p className="text-[11px] sm:text-xs text-muted-foreground">Terpakai</p>
+          <p className={`text-sm sm:text-base font-semibold font-mono mt-0.5 ${isOver ? 'text-destructive' : 'text-foreground'}`}>
             {formatCurrency(g.totalSpent)}
           </p>
         </div>
         <div className="pl-3">
-          <p className="text-xs text-muted-foreground">Sisa</p>
-          <p className={`text-base font-semibold font-mono mt-0.5 ${g.totalRemaining < 0 ? 'text-destructive' : 'text-foreground'}`}>
+          <p className="text-[11px] sm:text-xs text-muted-foreground">Sisa</p>
+          <p className={`text-sm sm:text-base font-semibold font-mono mt-0.5 ${g.totalRemaining < 0 ? 'text-destructive' : 'text-foreground'}`}>
             {formatCurrency(g.totalRemaining)}
           </p>
         </div>
