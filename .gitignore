@@ -28,7 +28,7 @@ dist-ssr
 .claude/
 graphify-out/
 
-# Generated code
-convex/_generated/
+# Generated code - kept for builds
+# convex/_generated/
 
 .vercel
