@@ -13,7 +13,7 @@ export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
     if (isOpen) { if (editData) { setCategory(editData.category); setAmount(new Intl.NumberFormat('id-ID').format(editData.limit)); } else { setAmount(''); setCategory(''); } }
   }, [isOpen, editData]);
 
-  const avail = (categories?.expense || []).filter(c => !budgets.some(b => b.categoryId === c.id) || (editData && c.id === editData.category));
+  const avail = (categories?.expense || []).filter(c => !budgets.some(b => b.categoryId === c._id) || (editData && c._id === editData.category));
   const ha = (e) => { const v = e.target.value.replace(/\D/g,''); setAmount(v ? new Intl.NumberFormat('id-ID').format(v) : ''); };
   const sub = (e) => { e.preventDefault(); const n = Number(amount.replace(/\./g,'')); if (!n || !category) return; updateBudget(category, n); onClose(); };
 
@@ -33,10 +33,10 @@ export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">Category</label>
             <div className="grid grid-cols-4 gap-1 max-h-48 overflow-y-auto">
               {avail.length > 0 ? avail.map(cat => (
-                <button key={cat.id} type="button" onClick={() => !editData && setCategory(cat.id)} disabled={!!editData}
+                <button key={cat._id} type="button" onClick={() => setCategory(cat._id)}
                   className={`flex flex-col items-center justify-center p-2 rounded-lg border text-xs font-medium transition-colors ${
-                    category === cat.id ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'
-                  } ${editData && category !== cat.id ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                    category === cat._id ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'
+                  }`}>
                   {cat.name}
                 </button>
               )) : <div className="col-span-4 text-center py-4 text-sm text-muted-foreground">All categories have budgets</div>}
