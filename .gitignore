@@ -30,3 +30,5 @@ graphify-out/
 
 # Generated code
 convex/_generated/
+
+.vercel
