@@ -7,7 +7,7 @@ import { useTransactions } from '@/context/TransactionContext';
 import { Toaster } from '@/components/ui/sonner';
 
 export default function Layout() {
-  const { isModalOpen, closeModal, openModal } = useTransactions();
+  const { isModalOpen, closeModal, openModal, editingTransaction } = useTransactions();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -19,7 +19,7 @@ export default function Layout() {
         </div>
       </main>
       <BottomNav onOpenAdd={() => openModal()} />
-      <AddTransactionModal isOpen={isModalOpen} onClose={closeModal} />
+      <AddTransactionModal isOpen={isModalOpen} onClose={closeModal} editingTransaction={editingTransaction} />
       <Toaster position="top-right" richColors />
     </div>
   );

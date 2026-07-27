@@ -4,8 +4,9 @@ import { useTransactions } from '@/context/TransactionContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
-export default function AddTransactionModal({ isOpen, onClose, editData = null }) {
+export default function AddTransactionModal({ isOpen, onClose, editData: propEditData = null, editingTransaction = null }) {
   const { addTransaction, editTransaction, isPreset, categories, wallets } = useTransactions();
+  const editData = propEditData || editingTransaction || null;
   const [type, setType] = useState('expense');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
