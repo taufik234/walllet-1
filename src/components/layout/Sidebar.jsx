@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, BarChart3, User, Wallet, Plus, PieChart, Target, LogOut } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, BarChart3, User, Wallet, Plus, PieChart, Target, Moon, Sun } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTransactions } from '@/context/TransactionContext';
+import { useTheme } from '@/context/ThemeContext';
 import { Button } from '@/components/ui/button';
 
 const navItems = [
@@ -61,6 +62,7 @@ export function SidebarContent() {
 
 export default function Sidebar({ onOpenAdd }) {
   const { stats } = useTransactions();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-sidebar border-r border-sidebar-border z-30">
@@ -86,6 +88,13 @@ export default function Sidebar({ onOpenAdd }) {
           <Plus className="w-4 h-4" />
           Input Transaksi
         </Button>
+        <button
+          onClick={toggleTheme}
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+        >
+          {theme === 'dark' ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+        </button>
       </div>
     </aside>
   );
