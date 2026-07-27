@@ -29,7 +29,7 @@ export default function AdjustBalanceModal({ isOpen, onClose, walletId, currentB
     const type = diff > 0 ? 'income' : 'expense';
     const typeCategories = categories[type] || [];
     const lainnyaCategory = typeCategories.find(c => c.name?.toLowerCase() === 'lainnya');
-    const categoryId = lainnyaCategory ? lainnyaCategory.id : null;
+    const categoryId = lainnyaCategory ? lainnyaCategory.id : undefined;
     addTransaction({ type, amount: Math.abs(diff), category_id: categoryId, date: new Date().toISOString().split('T')[0], note: 'Penyesuaian Saldo Manual', wallet_id: walletId });
     onClose();
   };
