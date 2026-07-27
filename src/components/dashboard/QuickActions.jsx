@@ -1,96 +1,64 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Utensils, Car, Coffee, ShoppingBag, Zap, Briefcase, ArrowLeftRight } from 'lucide-react';
-import { useTransactions } from '../../context/TransactionContext';
-import TransferModal from '../transactions/TransferModal';
+import { Utensils, Car, Coffee, ShoppingBag, Zap, ArrowLeftRight, ArrowRightLeft, History } from 'lucide-react';
+import { useTransactions } from '@/context/TransactionContext';
+import { Button } from '@/components/ui/button';
+import TransferModal from '@/components/transactions/TransferModal';
+import { useState } from 'react';
 
 export default function QuickActions() {
-    const { openModal } = useTransactions();
-    const navigate = useNavigate();
-    const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const { openModal } = useTransactions();
+  const navigate = useNavigate();
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
 
-    const actions = [
-        {
-            label: 'Makan',
-            icon: Utensils,
-            color: 'text-orange-400 bg-orange-500/10 border-orange-500/20 hover:border-orange-500/50',
-            data: { type: 'expense', category: 'makan', note: 'Makan Siang', amount: 30000, wallet: 'cash' }
-        },
-        {
-            label: 'Transport',
-            icon: Car,
-            color: 'text-blue-400 bg-blue-500/10 border-blue-500/20 hover:border-blue-500/50',
-            data: { type: 'expense', category: 'transport', note: 'Bensin / Ojol', amount: 20000, wallet: 'ewallet' }
-        },
-        {
-            label: 'Kopi',
-            icon: Coffee,
-            color: 'text-amber-400 bg-amber-500/10 border-amber-500/20 hover:border-amber-500/50',
-            data: { type: 'expense', category: 'makan', note: 'Ngopi', amount: 25000, wallet: 'ewallet' }
-        },
-        {
-            label: 'Mart',
-            icon: ShoppingBag,
-            color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:border-emerald-500/50',
-            data: { type: 'expense', category: 'belanja', note: 'Minimarket', amount: 50000, wallet: 'cash' }
-        },
-        {
-            label: 'Tagihan',
-            icon: Zap,
-            color: 'text-violet-400 bg-violet-500/10 border-violet-500/20 hover:border-violet-500/50',
-            data: { type: 'expense', category: 'tagihan', note: 'Listrik / Air', amount: 100000, wallet: 'bank' }
-        },
-    ];
+  const actions = [
+    { label: 'Makan', icon: Utensils, data: { type: 'expense', category: 'makan', note: 'Makan Siang', wallet: 'cash' } },
+    { label: 'Transport', icon: Car, data: { type: 'expense', category: 'transport', note: 'Bensin / Ojol', wallet: 'ewallet' } },
+    { label: 'Kopi', icon: Coffee, data: { type: 'expense', category: 'makan', note: 'Ngopi', wallet: 'ewallet' } },
+    { label: 'Mart', icon: ShoppingBag, data: { type: 'expense', category: 'belanja', note: 'Minimarket', wallet: 'cash' } },
+    { label: 'Tagihan', icon: Zap, data: { type: 'expense', category: 'tagihan', note: 'Listrik / Air', wallet: 'bank' } },
+  ];
 
-    const handleAction = (data) => {
-        // Set date to today explicitly
-        const today = new Date().toISOString().split('T')[0];
-        openModal({ ...data, date: today }, true); // true = isPreset
-    };
+  const handleAction = (data) => {
+    const today = new Date().toISOString().split('T')[0];
+    openModal({ ...data, date: today }, true);
+  };
 
-    return (
-        <div>
-            <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-3 px-1">Aksi Cepat</h3>
-            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
-                {/* Transaction History Shortcut */}
-                <button
-                    onClick={() => navigate('/transactions')}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 transition-all active:scale-95 whitespace-nowrap"
-                >
-                    <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
-                        <ArrowLeftRight className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-sm font-bold">Riwayat</span>
-                </button>
-
-                {/* Transfer Button */}
-                <button
-                    onClick={() => setIsTransferOpen(true)}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl border border-blue-500/20 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 dark:text-blue-400 transition-all active:scale-95 whitespace-nowrap shadow-sm dark:shadow-none"
-                >
-                    <ArrowLeftRight className="w-4 h-4" />
-                    <span className="text-sm font-medium">Transfer</span>
-                </button>
-
-                {actions.map((action, idx) => {
-                    const Icon = action.icon;
-                    return (
-                        <button
-                            key={idx}
-                            onClick={() => handleAction(action.data)}
-                            className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all active:scale-95 whitespace-nowrap bg-white dark:bg-transparent shadow-sm dark:shadow-none ${action.color}`}
-                        >
-                            <Icon className="w-4 h-4" />
-                            <span className="text-sm font-medium">{action.label}</span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            <TransferModal
-                isOpen={isTransferOpen}
-                onClose={() => setIsTransferOpen(false)}
-            />
-        </div>
-    );
+  return (
+    <div>
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">Aksi Cepat</h3>
+      <div className="flex gap-2.5 overflow-x-auto pb-2 no-scrollbar">
+        <Button
+          variant="outline"
+          className="flex items-center gap-2 shrink-0 h-10 rounded-xl bg-background hover:bg-muted/50"
+          onClick={() => navigate('/transactions')}
+        >
+          <History className="w-4 h-4" />
+          Riwayat
+        </Button>
+        <Button
+          variant="outline"
+          className="flex items-center gap-2 shrink-0 h-10 rounded-xl bg-background hover:bg-muted/50"
+          onClick={() => setIsTransferOpen(true)}
+        >
+          <ArrowRightLeft className="w-4 h-4" />
+          Transfer
+        </Button>
+        {actions.map((action, idx) => {
+          const Icon = action.icon;
+          return (
+            <Button
+              key={idx}
+              variant="ghost"
+              className="flex items-center gap-2 shrink-0 h-10 rounded-xl bg-muted/30 hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-all duration-200"
+              onClick={() => handleAction(action.data)}
+            >
+              <Icon className="w-4 h-4" />
+              {action.label}
+            </Button>
+          );
+        })}
+      </div>
+      <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} />
+    </div>
+  );
 }

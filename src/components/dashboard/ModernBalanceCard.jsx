@@ -1,70 +1,68 @@
-import React, { useState } from 'react';
-import { ChevronDown, Wallet } from 'lucide-react';
-import { formatCurrency } from '../../utils/utils';
-import { useTransactions } from '../../context/TransactionContext';
-
+import { formatCurrency } from '@/utils/utils';
+import { useTransactions } from '@/context/TransactionContext';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { Card } from '@/components/ui/card';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
-export default function ModernBalanceCard({ currentDate, onDateChange }) {
-    const { stats, transactions } = useTransactions();
+function Skeleton() {
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-5">
+        <div className="w-2 h-2 rounded-full bg-primary/30" />
+        <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+      </div>
+      <div className="h-12 w-56 bg-muted rounded animate-pulse mb-5" />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="h-16 bg-muted rounded-lg animate-pulse" />
+        <div className="h-16 bg-muted rounded-lg animate-pulse" />
+      </div>
+    </Card>
+  );
+}
 
-    const displayDate = format(currentDate, 'MMMM yyyy', { locale: id });
+export default function ModernBalanceCard({ currentDate }) {
+  const { stats, loading } = useTransactions();
+  if (loading || !stats) return <Skeleton />;
 
-    const handleMonthChange = (e) => {
-        const date = new Date(e.target.value);
-        if (!isNaN(date.getTime())) {
-            onDateChange(date);
-        }
-    };
+  return (
+    <Card className="p-6 relative overflow-hidden">
+      {/* Decorative gradient */}
+      <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-12 -left-12 w-32 h-32 rounded-full bg-primary/3 blur-2xl pointer-events-none" />
 
-    // Get last income
-    const lastIncome = React.useMemo(() => {
-        const incomes = transactions.filter(t => t.type === 'income');
-        if (incomes.length === 0) return 0;
-        // Sort by date desc
-        incomes.sort((a, b) => new Date(b.date) - new Date(a.date));
-        return incomes[0].amount;
-    }, [transactions]);
-
-    return (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-800">
-            {/* Header */}
-            <div className="flex justify-between items-start mb-2">
-                <span className="text-slate-500 dark:text-slate-400 font-medium">Saldo Saya</span>
-                <div className="relative">
-                    <button className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                        {displayDate}
-                        <ChevronDown className="w-3 h-3" />
-                    </button>
-                    <input
-                        type="month"
-                        value={format(currentDate, 'yyyy-MM')}
-                        onChange={handleMonthChange}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                </div>
-            </div>
-
-            {/* Main Balance */}
-            <div className="mb-6">
-                <h2 className="text-4xl font-bold text-slate-900 dark:text-white tracking-tight">
-                    {formatCurrency(stats?.totalBalance || 0)}
-                </h2>
-            </div>
-
-            {/* Footer Stats */}
-            <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                    <Wallet className="w-4 h-4" />
-                </div>
-                <div className="flex-1 flex justify-between items-center">
-                    <span className="text-sm text-slate-500 dark:text-slate-400">Pendapatan terakhir</span>
-                    <span className="text-sm font-bold text-emerald-500">
-                        {lastIncome > 0 ? '+' : ''}{formatCurrency(lastIncome)}
-                    </span>
-                </div>
-            </div>
+      <div className="relative">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs font-medium text-muted-foreground tracking-wide">Total Balance</span>
+          </div>
+          <span className="text-[10px] font-medium text-muted-foreground bg-muted/50 px-2.5 py-1 rounded-full">
+            {format(currentDate, 'MMM yyyy', { locale: id })}
+          </span>
         </div>
-    );
+
+        <p className="text-[2.75rem] font-bold text-foreground mb-5 tracking-tight leading-none font-mono">
+          {formatCurrency(stats?.totalBalance || 0)}
+        </p>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-background/80 backdrop-blur-sm rounded-xl p-3.5 border border-border/50">
+            <div className="flex items-center gap-1.5 mb-1">
+              <TrendingUp size={12} strokeWidth={2} className="text-income" />
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Income</span>
+            </div>
+            <p className="text-base font-semibold text-income font-mono">{formatCurrency(stats.totalIncome)}</p>
+          </div>
+          <div className="bg-background/80 backdrop-blur-sm rounded-xl p-3.5 border border-border/50">
+            <div className="flex items-center gap-1.5 mb-1">
+              <TrendingDown size={12} strokeWidth={2} className="text-expense" />
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">Expense</span>
+            </div>
+            <p className="text-base font-semibold text-expense font-mono">{formatCurrency(stats.totalExpense)}</p>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
 }

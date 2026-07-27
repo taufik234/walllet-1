@@ -1,39 +1,26 @@
-import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import BottomNav from './BottomNav';
 import MobileHeader from './MobileHeader';
-import AddTransactionModal from '../shared/AddTransactionModal';
-import { useTransactions } from '../../context/TransactionContext';
+import AddTransactionModal from '@/components/shared/AddTransactionModal';
+import { useTransactions } from '@/context/TransactionContext';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function Layout() {
-    const { isModalOpen, closeModal, openModal, editingTransaction } = useTransactions();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isModalOpen, closeModal, openModal } = useTransactions();
 
-    return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 font-sans selection:bg-indigo-500/30 transition-colors duration-300">
-            <Sidebar
-                onOpenAdd={() => openModal()}
-                isOpen={isSidebarOpen}
-                onClose={() => setIsSidebarOpen(false)}
-            />
-
-            {/* Mobile Header */}
-            <MobileHeader onMenuClick={() => setIsSidebarOpen(true)} />
-
-            <main className="lg:pl-64 min-h-screen pb-20 lg:pb-0">
-                <div className="max-w-5xl mx-auto p-4 lg:p-8">
-                    <Outlet />
-                </div>
-            </main>
-
-            <BottomNav onOpenAdd={() => openModal()} />
-
-            <AddTransactionModal
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                editData={editingTransaction}
-            />
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <Sidebar onOpenAdd={() => openModal()} />
+      <MobileHeader />
+      <main className="lg:pl-64 min-h-[100dvh] pb-16 lg:pb-0">
+        <div className="max-w-6xl mx-auto px-4 pt-4 lg:px-8 lg:pt-8">
+          <Outlet />
         </div>
-    );
+      </main>
+      <BottomNav onOpenAdd={() => openModal()} />
+      <AddTransactionModal isOpen={isModalOpen} onClose={closeModal} />
+      <Toaster position="top-right" richColors />
+    </div>
+  );
 }

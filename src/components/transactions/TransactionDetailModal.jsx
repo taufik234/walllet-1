@@ -1,131 +1,77 @@
-import React from 'react';
-import { X, Calendar, Wallet, FileText, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, ArrowLeftRight } from 'lucide-react';
-import { formatCurrency, formatDate } from '../../utils/utils';
-import { useTransactions } from '../../context/TransactionContext';
+import { formatCurrency, formatDate } from '@/utils/utils';
+import { ArrowLeftRight, ArrowUp, ArrowDown, PencilLine, Trash2 } from 'lucide-react';
+import { useTransactions } from '@/context/TransactionContext';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 export default function TransactionDetailModal({ isOpen, onClose, transaction }) {
-    const { deleteTransaction, deleteTransfer, openModal } = useTransactions();
+  const { deleteTransaction, deleteTransfer, openModal } = useTransactions();
+  if (!isOpen || !transaction) return null;
 
-    if (!isOpen || !transaction) return null;
+  const isTransfer = !!transaction.transfer_pair_id;
+  const isIncome = transaction.type === 'income';
+  const walletLabel = transaction.wallet?.name || 'Cash';
+  const catLabel = transaction.category?.name || 'Others';
 
-    const isTransfer = !!transaction.transfer_pair_id;
-    const isIncome = transaction.type === 'income';
+  const handleDelete = () => {
+    const msg = isTransfer ? 'Delete this transfer? Both sides will be removed.' : 'Delete this transaction?';
+    if (window.confirm(msg)) { isTransfer ? deleteTransfer(transaction.transfer_pair_id) : deleteTransaction(transaction.id); onClose(); }
+  };
+  const handleEdit = () => { onClose(); setTimeout(() => openModal(transaction), 100); };
 
-    // Use optional chaining and fallback for Supabase relation objects
-    const WalletLabel = transaction.wallet?.name || 'Tunai';
-    const categoryLabel = transaction.category?.name || 'Lainnya';
-
-    const handleDelete = () => {
-        const msg = isTransfer
-            ? 'Yakin ingin menghapus transfer ini? Kedua sisi transfer akan dihapus.'
-            : 'Yakin ingin menghapus transaksi ini?';
-        if (window.confirm(msg)) {
-            if (isTransfer) {
-                deleteTransfer(transaction.transfer_pair_id);
-            } else {
-                deleteTransaction(transaction.id);
-            }
-            onClose();
-        }
-    };
-
-    const handleEdit = () => {
-        onClose();
-        // Slight delay to allow efficient modal swap
-        setTimeout(() => openModal(transaction), 100);
-    };
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative transition-colors">
-                {/* Receipt Pattern Top */}
-                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-
-                <div className="p-6 relative">
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-
-                    <div className="flex flex-col items-center pt-4 pb-8">
-                        <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-4 ${
-                            isTransfer
-                                ? 'bg-blue-500/10 text-blue-500 dark:text-blue-400'
-                                : isIncome
-                                    ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400'
-                                    : 'bg-rose-500/10 text-rose-500 dark:text-rose-400'
-                            }`}>
-                            {isTransfer
-                                ? <ArrowLeftRight className="w-8 h-8" />
-                                : isIncome
-                                    ? <ArrowUpCircle className="w-8 h-8" />
-                                    : <ArrowDownCircle className="w-8 h-8" />}
-                        </div>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">
-                            {isTransfer ? 'Transfer' : isIncome ? 'Pemasukan' : 'Pengeluaran'}
-                        </p>
-                        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-                            {formatCurrency(transaction.amount)}
-                        </h2>
-                    </div>
-
-                    {/* Receipt Details */}
-                    <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-5 space-y-4 border border-slate-200 dark:border-slate-800/50">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/50 pb-3">
-                            <span className="text-slate-500 text-sm flex items-center gap-2">
-                                <Calendar className="w-4 h-4" /> Tanggal
-                            </span>
-                            <span className="text-slate-900 dark:text-slate-200 font-medium text-sm">
-                                {formatDate(transaction.date)}
-                            </span>
-                        </div>
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/50 pb-3">
-                            <span className="text-slate-500 text-sm flex items-center gap-2">
-                                <Wallet className="w-4 h-4" /> {isTransfer ? 'Dompet' : 'Sumber'}
-                            </span>
-                            <span className="text-slate-900 dark:text-slate-200 font-medium text-sm capitalize">
-                                {WalletLabel}
-                            </span>
-                        </div>
-                        {!isTransfer && (
-                            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/50 pb-3">
-                                <span className="text-slate-500 text-sm flex items-center gap-2">
-                                    <FileText className="w-4 h-4" /> Kategori
-                                </span>
-                                <span className="text-slate-900 dark:text-slate-200 font-medium text-sm capitalize">
-                                    {categoryLabel}
-                                </span>
-                            </div>
-                        )}
-                        {transaction.note && (
-                            <div className="pt-1">
-                                <p className="text-slate-500 text-xs mb-1">Catatan</p>
-                                <p className="text-slate-700 dark:text-slate-300 text-sm italic">"{transaction.note}"</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className={`grid gap-3 mt-6 ${isTransfer ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                        {!isTransfer && (
-                            <button
-                                onClick={handleEdit}
-                                className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-500 dark:text-indigo-400 font-medium py-3 rounded-xl transition-colors"
-                            >
-                                <Pencil className="w-4 h-4" /> Edit
-                            </button>
-                        )}
-                        <button
-                            onClick={handleDelete}
-                            className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-rose-100 dark:hover:bg-rose-900/30 text-rose-500 dark:text-rose-400 font-medium py-3 rounded-xl transition-colors"
-                        >
-                            <Trash2 className="w-4 h-4" /> Hapus {isTransfer ? 'Transfer' : ''}
-                        </button>
-                    </div>
-                </div>
-            </div>
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-sm">
+        <div className="flex flex-col items-center pb-5 border-b border-border">
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-3 ${
+            isTransfer
+              ? 'bg-muted text-muted-foreground'
+              : isIncome
+                ? 'bg-income/15 text-income'
+                : 'bg-expense-bg text-expense'
+          }`}>
+            {isTransfer ? <ArrowLeftRight size={24} strokeWidth={1.5} /> : isIncome ? <ArrowUp size={24} strokeWidth={1.5} /> : <ArrowDown size={24} strokeWidth={1.5} />}
+          </div>
+          <span className="text-xs font-medium text-muted-foreground mb-1">{isTransfer ? 'Transfer' : isIncome ? 'Income' : 'Expense'}</span>
+          <p className="text-2xl font-bold text-foreground font-mono">{formatCurrency(transaction.amount)}</p>
         </div>
-    );
+
+        <div className="space-y-3 pt-3">
+          <Row label="Date" value={formatDate(transaction.date)} />
+          <Row label={isTransfer ? 'Wallet' : 'Source'} value={walletLabel} />
+          {!isTransfer && <Row label="Category" value={catLabel} />}
+          {transaction.note && (
+            <div className="pt-1">
+              <p className="text-xs text-muted-foreground mb-1">Note</p>
+              <p className="text-sm text-foreground bg-muted/50 rounded-xl px-3.5 py-2.5">"{transaction.note}"</p>
+            </div>
+          )}
+        </div>
+
+        <Separator className="my-4" />
+
+        <div className={`grid gap-2 ${isTransfer ? 'grid-cols-1' : 'grid-cols-2'}`}>
+          {!isTransfer && (
+            <Button variant="outline" onClick={handleEdit} className="gap-1.5">
+              <PencilLine size={14} strokeWidth={1.5} /> Edit
+            </Button>
+          )}
+          <Button variant="destructive" onClick={handleDelete} className={isTransfer ? 'col-span-full' : ''}>
+            <Trash2 size={14} strokeWidth={1.5} className="mr-1.5" />
+            Delete{isTransfer ? ' Transfer' : ''}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Row({ label, value }) {
+  return (
+    <div className="flex items-center justify-between border-b border-border pb-2.5">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium text-foreground">{value}</span>
+    </div>
+  );
 }

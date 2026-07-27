@@ -1,131 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { X, Check } from 'lucide-react';
-import { cn } from '../../utils/utils';
-import { useTransactions } from '../../context/TransactionContext';
+import { useState, useEffect } from 'react';
+import { Check } from 'lucide-react';
+import { useTransactions } from '@/context/TransactionContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 export default function AddBudgetModal({ isOpen, onClose, editData = null }) {
-    const { updateBudget, budgets, categories } = useTransactions();
-    const [amount, setAmount] = useState('');
-    const [category, setCategory] = useState('');
+  const { updateBudget, budgets, categories } = useTransactions();
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
 
-    // Reset or Load Data when opening
-    useEffect(() => {
-        if (isOpen) {
-            if (editData) {
-                // Edit Mode
-                setCategory(editData.category);
-                setAmount(new Intl.NumberFormat('id-ID').format(editData.limit));
-            } else {
-                // Add Mode
-                setAmount('');
-                setCategory('');
-            }
-        }
-    }, [isOpen, editData]);
+  useEffect(() => {
+    if (isOpen) { if (editData) { setCategory(editData.category); setAmount(new Intl.NumberFormat('id-ID').format(editData.limit)); } else { setAmount(''); setCategory(''); } }
+  }, [isOpen, editData]);
 
-    if (!isOpen) return null;
+  const avail = (categories?.expense || []).filter(c => !budgets.some(b => b.categoryId === c.id) || (editData && c.id === editData.category));
+  const ha = (e) => { const v = e.target.value.replace(/\D/g,''); setAmount(v ? new Intl.NumberFormat('id-ID').format(v) : ''); };
+  const sub = (e) => { e.preventDefault(); const n = Number(amount.replace(/\./g,'')); if (!n || !category) return; updateBudget(category, n); onClose(); };
 
-    // Filter categories that don't have a budget yet (for Add mode)
-    // For Edit mode, we must allow the current category even if it exists
-    const availableCategories = (categories?.expense || []).filter(c =>
-        !budgets.some(b => b.category_id === c.id) || (editData && c.id === editData.category)
-    );
-
-    const handleAmountChange = (e) => {
-        const cleanValue = e.target.value.replace(/\D/g, '');
-        if (cleanValue) {
-            const formatted = new Intl.NumberFormat('id-ID').format(cleanValue);
-            setAmount(formatted);
-        } else {
-            setAmount('');
-        }
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const numericAmount = Number(amount.replace(/\./g, ''));
-        if (!numericAmount || !category) return;
-
-        updateBudget(category, numericAmount);
-        onClose();
-    };
-
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-colors">
-                <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                        {editData ? 'Edit Target Budget' : 'Tambah Target Budget'}
-                    </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-slate-900 dark:hover:text-white">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="p-4 space-y-6">
-                    {/* Amount */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Target Anggaran (Rp)</label>
-                        <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">Rp</span>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                value={amount}
-                                onChange={handleAmountChange}
-                                placeholder="0"
-                                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-bold text-lg"
-                                autoFocus
-                            />
-                        </div>
-                    </div>
-
-                    {/* Categories Grid */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Pilih Kategori</label>
-                        <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
-                            {availableCategories.length > 0 ? (
-                                availableCategories.map((cat) => (
-                                    <button
-                                        key={cat.id}
-                                        type="button"
-                                        onClick={() => !editData && setCategory(cat.id)}
-                                        disabled={!!editData} // Disable category selection in Edit mode
-                                        className={cn(
-                                            "flex flex-col items-center justify-center p-2 rounded-xl gap-1 transition-all border",
-                                            category === cat.id
-                                                ? "bg-indigo-50 dark:bg-indigo-600/10 border-indigo-200 dark:border-indigo-600/50 text-indigo-600 dark:text-indigo-400 shadow-sm"
-                                                : "bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-300",
-                                            editData && category !== cat.id && "opacity-50 cursor-not-allowed"
-                                        )}
-                                    >
-                                        <span className="text-[10px] uppercase font-bold tracking-wider text-center">{cat.name}</span>
-                                    </button>
-                                ))
-                            ) : (
-                                <div className="col-span-4 text-center py-4 text-slate-500 text-sm italic">
-                                    Semua kategori sudah punya budget.
-                                </div>
-                            )}
-                        </div>
-                        {editData && (
-                            <p className="text-xs text-slate-500 italic text-center mt-2">
-                                Kategori tidak dapat diubah saat edit.
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Actions */}
-                    <button
-                        type="submit"
-                        disabled={!amount || !category}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 mt-4 transition-all active:scale-[0.98]"
-                    >
-                        <Check className="w-5 h-5" />
-                        Simpan Budget
-                    </button>
-                </form>
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{editData ? 'Edit Budget' : 'Add Budget'}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={sub} className="space-y-5">
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Budget Target (IDR)</label>
+            <input type="text" inputMode="numeric" value={amount} onChange={ha} placeholder="0" autoFocus
+              className="w-full bg-background border border-input rounded-lg py-2.5 px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Category</label>
+            <div className="grid grid-cols-4 gap-1 max-h-48 overflow-y-auto">
+              {avail.length > 0 ? avail.map(cat => (
+                <button key={cat.id} type="button" onClick={() => !editData && setCategory(cat.id)} disabled={!!editData}
+                  className={`flex flex-col items-center justify-center p-2 rounded-lg border text-xs font-medium transition-colors ${
+                    category === cat.id ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'
+                  } ${editData && category !== cat.id ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                  {cat.name}
+                </button>
+              )) : <div className="col-span-4 text-center py-4 text-sm text-muted-foreground">All categories have budgets</div>}
             </div>
-        </div>
-    );
+            {editData && <p className="text-xs text-muted-foreground italic text-center mt-2">Category can't be changed during edit.</p>}
+          </div>
+          <Button type="submit" disabled={!amount || !category} className="w-full gap-2">
+            <Check size={16} />Save Budget
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }

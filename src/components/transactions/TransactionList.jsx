@@ -1,186 +1,65 @@
 import { useState } from 'react';
-import { useTransactions } from '../../context/TransactionContext';
-import { cn, formatCurrency, formatDate } from '../../utils/utils';
-import { Wallet, ShoppingBag, Utensils, Car, Film, Gift, TrendingUp, MoreHorizontal, Trash2, Pencil, Heart, GraduationCap, Receipt, Briefcase, ArrowLeftRight } from 'lucide-react';
+import { useTransactions } from '@/context/TransactionContext';
+import { formatCurrency, formatDate } from '@/utils/utils';
+import { ArrowUp, ArrowDown, ChevronDown } from 'lucide-react';
 import TransactionDetailModal from './TransactionDetailModal';
 
-// Helper to get icon (duplicated for now, could be shared)
-const getIcon = (categoryName) => {
-    const name = categoryName?.toLowerCase() || '';
-    switch (name) {
-        case 'makan': return Utensils;
-        case 'transport': return Car;
-        case 'belanja': return ShoppingBag;
-        case 'hiburan': return Film;
-        case 'gaji': return Wallet;
-        case 'bonus': return Gift;
-        case 'investasi': return TrendingUp;
-        case 'kesehatan': return Heart;
-        case 'pendidikan': return GraduationCap;
-        case 'tagihan': return Receipt;
-        case 'freelance': return Briefcase;
-        default: return MoreHorizontal;
-    }
-};
-
 export default function TransactionList() {
-    const { filteredTransactions, deleteTransaction, openModal, advancedFilters } = useTransactions();
-    const [viewTransaction, setViewTransaction] = useState(null);
-    const [visibleCount, setVisibleCount] = useState(10); // Show 10 items initially
+  const { filteredTransactions, deleteTransaction, openModal } = useTransactions();
+  const [viewTx, setViewTx] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(10);
+  const visible = filteredTransactions.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredTransactions.length;
 
-    // 1. Slice transactions for pagination
-    const visibleTransactions = filteredTransactions.slice(0, visibleCount);
-    const hasMore = visibleCount < filteredTransactions.length;
-
-    // Check if we should group by date
-    // We only group if NOT sorting by amount (highest/lowest)
-    const shouldGroup = !advancedFilters?.isActive || (advancedFilters?.sortBy !== 'highest' && advancedFilters?.sortBy !== 'lowest');
-
-    // 2. Group transactions by date (Locally) - ONLY if shouldGroup is true
-    const groupedTransactions = shouldGroup ? visibleTransactions.reduce((groups, transaction) => {
-        const date = transaction.date;
-        if (!groups[date]) {
-            groups[date] = [];
-        }
-        groups[date].push(transaction);
-        return groups;
-    }, {}) : {};
-
-    // Sort dates based on user preference
-    const sortedDates = Object.keys(groupedTransactions).sort((a, b) => {
-        const dateA = new Date(a);
-        const dateB = new Date(b);
-        // If sort order is 'oldest', show oldest dates first (Ascending)
-        if (advancedFilters?.isActive && advancedFilters?.sortBy === 'oldest') {
-            return dateA - dateB;
-        }
-        // Default to Newest dates first (Descending)
-        return dateB - dateA;
-    });
-
-    if (filteredTransactions.length === 0) {
-        return (
-            <div className="text-center py-20 text-slate-500">
-                <p className="mb-2">Belum ada transaksi</p>
-                <p className="text-sm">Mulai catat keuanganmu sekarang!</p>
-            </div>
-        );
-    }
-
-    const handleLoadMore = () => {
-        setVisibleCount(prev => prev + 10);
-    };
-
-    const TransactionItem = ({ trx }) => {
-        const isTransfer = !!trx.transfer_pair_id;
-        const categoryName = trx.category?.name || 'Lainnya';
-        const Icon = isTransfer ? ArrowLeftRight : getIcon(categoryName);
-
-        // Transfer label: show direction
-        const transferLabel = isTransfer
-            ? (trx.type === 'expense'
-                ? `Transfer ke ${trx.wallet?.name || '...'}`
-                : `Transfer dari ${trx.wallet?.name || '...'}`)
-            : null;
-
-        const colorClass = isTransfer
-            ? 'bg-blue-500/10 text-blue-500 dark:text-blue-400'
-            : trx.type === 'income'
-                ? 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400'
-                : 'bg-rose-500/10 text-rose-500 dark:text-rose-400';
-
-        const amountColorClass = isTransfer
-            ? 'text-blue-500 dark:text-blue-400'
-            : trx.type === 'income'
-                ? 'text-emerald-500 dark:text-emerald-400'
-                : 'text-rose-500 dark:text-rose-400';
-
-        const amountPrefix = isTransfer
-            ? (trx.type === 'expense' ? '→' : '←')
-            : (trx.type === 'income' ? '+' : '-');
-
-        return (
-            <div
-                onClick={() => setViewTransaction(trx)}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center gap-4 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all cursor-pointer group relative overflow-hidden active:scale-[0.98] shadow-sm dark:shadow-none"
-            >
-                <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
-                    colorClass
-                )}>
-                    <Icon className="w-5 h-5" />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                    <p className="text-slate-900 dark:text-white font-medium capitalize truncate pr-8">
-                        {trx.note || (isTransfer ? 'Transfer' : categoryName)}
-                    </p>
-                    <p className="text-xs text-slate-500 flex items-center gap-1">
-                        {isTransfer ? (
-                            <span className="text-blue-500 dark:text-blue-400 font-medium">{transferLabel}</span>
-                        ) : (
-                            <span className="capitalize">{categoryName}</span>
-                        )}
-                        <span className="text-slate-400 dark:text-slate-600">•</span>
-                        <span className="capitalize">{trx.wallet?.name || 'Tunai'}</span>
-                        {!shouldGroup && <span className="text-slate-400 dark:text-slate-600">• {formatDate(trx.date)}</span>}
-                    </p>
-                </div>
-
-                <div className={cn("font-bold whitespace-nowrap text-right", amountColorClass)}>
-                    {amountPrefix} {formatCurrency(trx.amount)}
-                </div>
-            </div>
-        );
-    };
-
+  if (filteredTransactions.length === 0) {
     return (
-        <div className="space-y-8 pb-8">
-            {shouldGroup ? (
-                // Grouped View
-                sortedDates.map((date) => {
-                    const dayTransactions = groupedTransactions[date];
-                    const isToday = date === new Date().toISOString().split('T')[0];
-                    const isYesterday = date === new Date(Date.now() - 86400000).toISOString().split('T')[0];
-
-                    const displayDate = isToday ? 'Hari Ini' : isYesterday ? 'Kemarin' : formatDate(date);
-
-                    return (
-                        <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 mb-3 sticky top-0 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur py-2 z-10 w-full transition-colors">
-                                {displayDate}
-                            </h3>
-                            <div className="space-y-3">
-                                {dayTransactions.map((trx) => (
-                                    <TransactionItem key={trx.id} trx={trx} />
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })
-            ) : (
-                // Flat View (Sorted by Amount)
-                <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {visibleTransactions.map((trx) => (
-                        <TransactionItem key={trx.id} trx={trx} />
-                    ))}
-                </div>
-            )}
-
-            {hasMore && (
-                <button
-                    onClick={handleLoadMore}
-                    className="w-full py-3 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl transition-all shadow-sm dark:shadow-none"
-                >
-                    Muat Lebih Banyak...
-                </button>
-            )}
-
-            <TransactionDetailModal
-                isOpen={!!viewTransaction}
-                onClose={() => setViewTransaction(null)}
-                transaction={viewTransaction}
-            />
-        </div>
+      <div className="p-8 text-center rounded-xl bg-card border border-border">
+        <p className="text-sm text-muted-foreground">Belum ada transaksi</p>
+        <p className="text-xs text-muted-foreground/60 mt-1">Mulai catat keuanganmu sekarang!</p>
+      </div>
     );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {visible.map((trx) => {
+        const cat = trx.category?.name || 'Others';
+        const isInc = trx.type === 'income';
+        return (
+          <div
+            key={trx._id}
+            onClick={() => setViewTx(trx)}
+            className="px-4 py-3 flex items-center gap-3 cursor-pointer rounded-xl bg-card border border-border hover:border-ink-3 transition-all duration-200"
+          >
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+              isInc ? 'bg-income/15 text-income' : 'bg-expense-bg text-expense'
+            }`}>
+              {isInc ? <ArrowUp size={16} strokeWidth={1.5} /> : <ArrowDown size={16} strokeWidth={1.5} />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground capitalize truncate">{trx.note || cat}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-xs text-muted-foreground">{trx.wallet?.name || 'Cash'}</span>
+                <span className="text-xs text-muted-foreground/40">&middot;</span>
+                <span className="text-xs text-muted-foreground">{formatDate(trx.date)}</span>
+              </div>
+            </div>
+            <p className={`text-sm font-semibold shrink-0 ${isInc ? 'text-income' : 'text-expense'}`}>
+              {isInc ? '+' : '-'}{formatCurrency(trx.amount)}
+            </p>
+          </div>
+        );
+      })}
+      {hasMore && (
+        <button
+          onClick={() => setVisibleCount(p => p + 10)}
+          className="w-full py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors text-center flex items-center justify-center gap-1.5"
+        >
+          <ChevronDown size={14} strokeWidth={1.5} />
+          Load more ({filteredTransactions.length - visibleCount})
+        </button>
+      )}
+      <TransactionDetailModal isOpen={!!viewTx} onClose={() => setViewTx(null)} transaction={viewTx} />
+    </div>
+  );
 }

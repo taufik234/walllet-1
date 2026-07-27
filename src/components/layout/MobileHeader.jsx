@@ -1,63 +1,67 @@
-import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import { Moon, Sun, User, PanelLeft } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
+import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Moon, Sun, Menu } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
+import { SidebarContent } from './Sidebar';
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const PAGE_TITLES = {
-    '/': 'Dashboard',
-    '/transactions': 'Transaksi',
-    '/stats': 'Statistik',
-    '/budget': 'Budget',
-    '/goals': 'Goals',
-    '/wallets': 'Dompet',
-    '/profile': 'Profile',
+  '/': 'Dashboard',
+  '/transactions': 'Transaksi',
+  '/stats': 'Statistik',
+  '/budget': 'Budget',
+  '/goals': 'Goals',
+  '/wallets': 'Dompet',
+  '/profile': 'Profile',
 };
 
-export default function MobileHeader({ onMenuClick }) {
-    const location = useLocation();
-    const { theme, toggleTheme } = useTheme();
+export default function MobileHeader() {
+  const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
+  const pageTitle = PAGE_TITLES[location.pathname] || 'Dashboard';
+  const [open, setOpen] = useState(false);
 
-    const pageTitle = PAGE_TITLES[location.pathname] || 'Dashboard';
-
-    return (
-        <header className="lg:hidden sticky top-0 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between px-4 h-14">
-                {/* Sidebar Toggle & Title */}
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={onMenuClick}
-                        className="p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                        aria-label="Open sidebar"
-                    >
-                        <PanelLeft className="w-6 h-6" />
-                    </button>
-                    <h1 className="font-bold text-slate-900 dark:text-white">{pageTitle}</h1>
+  return (
+    <header className="lg:hidden sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border">
+      <div className="flex items-center justify-between px-4 h-14">
+        <div className="flex items-center gap-3">
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger className="lg:hidden p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" aria-label="Open menu">
+              <Menu size={20} strokeWidth={1.5} />
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0">
+              <SheetTitle className="sr-only">Navigation</SheetTitle>
+              <div className="flex flex-col h-full bg-sidebar">
+                <div className="p-4 border-b border-sidebar-border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm">
+                      <span className="text-primary-foreground text-sm font-bold">G</span>
+                    </div>
+                    <div>
+                      <h1 className="text-base font-bold text-sidebar-foreground tracking-tight leading-none">My duit gw</h1>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Finance Tracker</p>
+                    </div>
+                  </div>
                 </div>
+                <SidebarContent />
+              </div>
+            </SheetContent>
+          </Sheet>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2">
-                    {/* Theme Toggle */}
-                    <button
-                        onClick={toggleTheme}
-                        className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        aria-label="Toggle theme"
-                    >
-                        {theme === 'dark' ? (
-                            <Sun className="w-5 h-5" />
-                        ) : (
-                            <Moon className="w-5 h-5" />
-                        )}
-                    </button>
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <h1 className="font-bold text-foreground text-sm">{pageTitle}</h1>
+          </div>
+        </div>
 
-                    {/* Profile Link */}
-                    <Link
-                        to="/profile"
-                        className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold text-sm"
-                    >
-                        <User className="w-4 h-4" />
-                    </Link>
-                </div>
-            </div>
-        </header>
-    );
+        <button
+          onClick={toggleTheme}
+          className="p-2 rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? <Sun className="w-4 h-4" strokeWidth={1.5} /> : <Moon className="w-4 h-4" strokeWidth={1.5} />}
+        </button>
+      </div>
+    </header>
+  );
 }

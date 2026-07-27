@@ -1,455 +1,404 @@
 import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import {
-    transactionService,
-    walletService,
-    budgetService,
-    categoryService,
-    goalService,
-    transferService,
-    statsService
-} from '../lib/services';
-import { supabase } from '../lib/supabase';
+import { useConvex } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 const TransactionContext = createContext();
 
 export const useTransactions = () => {
-    const context = useContext(TransactionContext);
-    if (!context) {
-        throw new Error('useTransactions must be used within a TransactionProvider');
-    }
-    return context;
+  const context = useContext(TransactionContext);
+  if (!context) {
+    throw new Error('useTransactions must be used within a TransactionProvider');
+  }
+  return context;
 };
 
+const TOKEN_KEY = 'auth_token';
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
 export const TransactionProvider = ({ children }) => {
-    const { user } = useAuth();
+  const { user } = useAuth();
+  const convex = useConvex();
 
-    // Theme State (Default to Dark)
-    const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  // Data States
+  const [transactions, setTransactions] = useState([]);
+  const [wallets, setWallets] = useState([]);
+  const [categories, setCategories] = useState({ income: [], expense: [] });
+  const [budgets, setBudgets] = useState([]);
+  const [goals, setGoals] = useState([]);
+  const [stats, setStats] = useState({ totalBalance: 0, totalIncome: 0, totalExpense: 0 });
+  const [walletStats, setWalletStats] = useState({});
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const root = window.document.documentElement;
-        if (theme === 'dark') {
-            root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
+  // Fetch all data from Convex
+  const fetchData = useCallback(async () => {
+    const token = getToken();
+    if (!user || !token) {
+      setTransactions([]);
+      setWallets([]);
+      setBudgets([]);
+      setGoals([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const [txData, walletData, catData, budgetData, goalData, userStats] = await Promise.all([
+        convex.query(api.transactions.list, { token }),
+        convex.query(api.wallets.list, { token }),
+        convex.query(api.categories.getGrouped),
+        convex.query(api.budgets.getWithStats, { token, referenceDate: new Date().toISOString() }),
+        convex.query(api.goals.list, { token }),
+        convex.query(api.stats.getStats, { token }),
+      ]);
+
+      setTransactions(txData || []);
+      setWallets(walletData || []);
+      setCategories(catData || { income: [], expense: [] });
+      setBudgets(budgetData || []);
+      setGoals(goalData || []);
+
+      if (userStats) {
+        setStats(userStats.global || { totalBalance: 0, totalIncome: 0, totalExpense: 0 });
+        setWalletStats(userStats.wallets || {});
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, convex]);
+
+  // Fetch data when user changes
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Transaction CRUD
+  const addTransaction = async (transaction) => {
+    const token = getToken();
+    try {
+      const walletId = transaction.walletId || transaction.wallet_id;
+      if (!walletId) throw new Error('Wallet harus dipilih');
+
+      const newTx = await convex.mutation(api.transactions.create, {
+        token,
+        type: transaction.type,
+        amount: transaction.amount,
+        date: transaction.date || new Date().toISOString().split('T')[0],
+        note: transaction.note,
+        walletId,
+        categoryId: transaction.categoryId || transaction.category_id,
+      });
+      setTransactions((prev) => [newTx, ...prev]);
+      return newTx;
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      throw error;
+    }
+  };
+
+  const deleteTransaction = async (id) => {
+    const token = getToken();
+    try {
+      await convex.mutation(api.transactions.remove, { token, id });
+      setTransactions((prev) => prev.filter((t) => t._id !== id));
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      throw error;
+    }
+  };
+
+  const editTransaction = async (id, updatedData) => {
+    const token = getToken();
+    try {
+      const updated = await convex.mutation(api.transactions.update, { token, id, ...updatedData });
+      setTransactions((prev) => prev.map((t) => (t._id === id ? updated : t)));
+      return updated;
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+      throw error;
+    }
+  };
+
+  // Transfer CRUD
+  const addTransfer = async ({ fromWalletId, toWalletId, amount, date, note }) => {
+    const token = getToken();
+    try {
+      const { transactions: newTxs } = await convex.mutation(api.transfers.create, {
+        token,
+        fromWalletId,
+        toWalletId,
+        amount,
+        date,
+        note,
+      });
+      setTransactions((prev) => [...newTxs, ...prev]);
+      return newTxs;
+    } catch (error) {
+      console.error('Error adding transfer:', error);
+      throw error;
+    }
+  };
+
+  const deleteTransfer = async (transferPairId) => {
+    const token = getToken();
+    try {
+      await convex.mutation(api.transfers.remove, { token, transferPairId });
+      setTransactions((prev) => prev.filter((t) => t.transferPairId !== transferPairId));
+    } catch (error) {
+      console.error('Error deleting transfer:', error);
+      throw error;
+    }
+  };
+
+  // Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [walletFilter, setWalletFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState({ day: '', month: '', year: '' });
+
+  // Advanced Filter State
+  const [advancedFilters, setAdvancedFilters] = useState({
+    isActive: false,
+    startDate: '',
+    endDate: '',
+    minAmount: '',
+    maxAmount: '',
+    categories: [],
+    wallets: [],
+    sortBy: 'newest',
+  });
+
+  // Filtering Logic
+  const filteredTransactions = useMemo(() => {
+    let result = transactions.filter((t) => {
+      const [tYear, tMonth, tDay] = (t.date || '').split('-');
+
+      let matchesDate = true;
+      if (!advancedFilters.isActive) {
+        const matchesYear = !dateFilter.year || tYear === dateFilter.year;
+        const matchesMonth = !dateFilter.month || tMonth === dateFilter.month;
+        const matchesDay = !dateFilter.day || tDay === dateFilter.day;
+        matchesDate = matchesYear && matchesMonth && matchesDay;
+      } else {
+        const tDate = new Date(t.date);
+        if (advancedFilters.startDate) {
+          const start = new Date(advancedFilters.startDate);
+          if (tDate < start) matchesDate = false;
         }
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-    };
-
-    // Data States
-    const [transactions, setTransactions] = useState([]);
-    const [wallets, setWallets] = useState([]);
-    const [categories, setCategories] = useState({ income: [], expense: [] });
-    const [budgets, setBudgets] = useState([]);
-    const [goals, setGoals] = useState([]);
-    const [stats, setStats] = useState({ totalBalance: 0, totalIncome: 0, totalExpense: 0 });
-    const [walletStats, setWalletStats] = useState({});
-    const [loading, setLoading] = useState(true);
-
-    // Fetch all data from Supabase
-    const fetchData = useCallback(async () => {
-        if (!user) {
-            setTransactions([]);
-            setWallets([]);
-            setBudgets([]);
-            setGoals([]);
-            setLoading(false);
-            return;
+        if (matchesDate && advancedFilters.endDate) {
+          const end = new Date(advancedFilters.endDate);
+          if (tDate > end) matchesDate = false;
         }
+      }
 
-        try {
-            setLoading(true);
-            const [txData, walletData, catData, budgetData, goalData, userStats] = await Promise.all([
-                transactionService.list(),
-                walletService.list(),
-                categoryService.getGrouped(),
-                budgetService.getWithStats(),
-                goalService.list(),
-                statsService.getStats(),
-            ]);
+      const matchesType = typeFilter === 'all' || t.type === typeFilter;
+      const matchesWallet = walletFilter === 'all' || t.walletId === walletFilter;
 
-            setTransactions(txData || []);
-            setWallets(walletData || []);
-            setCategories(catData || { income: [], expense: [] });
-            setBudgets(budgetData || []);
-            setGoals(goalData || []);
+      const query = searchQuery.toLowerCase();
+      const matchesSearch =
+        t.note?.toLowerCase().includes(query) ||
+        t.category?.name?.toLowerCase().includes(query) ||
+        t.amount?.toString().includes(query);
 
-            // Set stats from database calculation
-            if (userStats) {
-                setStats(userStats.global || { totalBalance: 0, totalIncome: 0, totalExpense: 0 });
-                setWalletStats(userStats.wallets || {});
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        } finally {
-            setLoading(false);
+      let matchesAdvanced = true;
+      if (advancedFilters.isActive) {
+        if (advancedFilters.categories.length > 0) {
+          if (!advancedFilters.categories.includes(t.categoryId)) {
+            matchesAdvanced = false;
+          }
         }
-    }, [user]);
-
-    // Fetch data when user changes
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
-
-    // Realtime Subscription
-    useEffect(() => {
-        if (!user) return;
-
-        // Subscribe to changes in all relevant tables
-        const channel = supabase
-            .channel('db_changes')
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'transactions' },
-                () => fetchData()
-            )
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'wallets' },
-                () => fetchData()
-            )
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'budgets' },
-                () => fetchData()
-            )
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'categories' },
-                () => fetchData()
-            )
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'goals' },
-                () => fetchData()
-            )
-            .subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    console.log('Realtime connected!');
-                }
-            });
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [user, fetchData]);
-
-    // Transaction CRUD
-    const addTransaction = async (transaction) => {
-        try {
-            const walletId = transaction.wallet_id || transaction.walletId;
-            if (!walletId) {
-                throw new Error("Wallet harus dipilih");
-            }
-
-            const newTx = await transactionService.create({
-                type: transaction.type,
-                amount: transaction.amount,
-                date: transaction.date || new Date().toISOString().split('T')[0],
-                note: transaction.note,
-                wallet_id: walletId,
-                category_id: transaction.category_id || transaction.categoryId,
-            });
-            setTransactions(prev => [newTx, ...prev]);
-            return newTx;
-        } catch (error) {
-            console.error('Error adding transaction:', error);
-            throw error;
+        if (advancedFilters.wallets.length > 0) {
+          if (!advancedFilters.wallets.includes(t.walletId)) {
+            matchesAdvanced = false;
+          }
         }
-    };
-
-    const deleteTransaction = async (id) => {
-        try {
-            await transactionService.delete(id);
-            setTransactions(prev => prev.filter(t => t.id !== id));
-        } catch (error) {
-            console.error('Error deleting transaction:', error);
-            throw error;
+        const amt = Number(t.amount);
+        if (matchesAdvanced && advancedFilters.minAmount && amt < Number(advancedFilters.minAmount)) {
+          matchesAdvanced = false;
         }
-    };
-
-    const editTransaction = async (id, updatedData) => {
-        try {
-            const updated = await transactionService.update(id, updatedData);
-            setTransactions(prev => prev.map(t => t.id === id ? updated : t));
-            return updated;
-        } catch (error) {
-            console.error('Error updating transaction:', error);
-            throw error;
+        if (matchesAdvanced && advancedFilters.maxAmount && amt > Number(advancedFilters.maxAmount)) {
+          matchesAdvanced = false;
         }
-    };
+      }
 
-    // Transfer CRUD
-    const addTransfer = async ({ fromWalletId, toWalletId, amount, date, note }) => {
-        try {
-            const { transactions: newTxs } = await transferService.create({
-                fromWalletId,
-                toWalletId,
-                amount,
-                date,
-                note,
-            });
-            setTransactions(prev => [...newTxs, ...prev]);
-            return newTxs;
-        } catch (error) {
-            console.error('Error adding transfer:', error);
-            throw error;
-        }
-    };
-
-    const deleteTransfer = async (transferPairId) => {
-        try {
-            await transferService.delete(transferPairId);
-            setTransactions(prev => prev.filter(t => t.transfer_pair_id !== transferPairId));
-        } catch (error) {
-            console.error('Error deleting transfer:', error);
-            throw error;
-        }
-    };
-
-
-
-    // Filter State
-    const [searchQuery, setSearchQuery] = useState('');
-    const [typeFilter, setTypeFilter] = useState('all');
-    const [walletFilter, setWalletFilter] = useState('all');
-    const [dateFilter, setDateFilter] = useState({ day: '', month: '', year: '' });
-
-    // Advanced Filter State
-    const [advancedFilters, setAdvancedFilters] = useState({
-        isActive: false,
-        startDate: '',
-        endDate: '',
-        minAmount: '',
-        maxAmount: '',
-        categories: [],
-        wallets: [],
-        sortBy: 'newest' // newest, oldest, highest, lowest
+      return matchesDate && matchesType && matchesSearch && matchesWallet && matchesAdvanced;
     });
 
-    // Filtering Logic
-    const filteredTransactions = useMemo(() => {
-        let result = transactions.filter(t => {
-            // 1. Basic Filters (Always active unless overridden or cleared)
-            const [tYear, tMonth, tDay] = (t.date || '').split('-');
+    if (advancedFilters.isActive && advancedFilters.sortBy) {
+      result.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        const amtA = Number(a.amount);
+        const amtB = Number(b.amount);
+        switch (advancedFilters.sortBy) {
+          case 'newest':
+            return dateB - dateA;
+          case 'oldest':
+            return dateA - dateB;
+          case 'highest':
+            return amtB - amtA;
+          case 'lowest':
+            return amtA - amtB;
+          default:
+            return 0;
+        }
+      });
+    }
 
-            // If Advanced Search is NOT active, use the simple Date/Month filter
-            let matchesDate = true;
-            if (!advancedFilters.isActive) {
-                const matchesYear = !dateFilter.year || tYear === dateFilter.year;
-                const matchesMonth = !dateFilter.month || tMonth === dateFilter.month;
-                const matchesDay = !dateFilter.day || tDay === dateFilter.day;
-                matchesDate = matchesYear && matchesMonth && matchesDay;
-            } else {
-                // Advanced Date Range
-                const tDate = new Date(t.date);
-                if (advancedFilters.startDate) {
-                    const start = new Date(advancedFilters.startDate);
-                    if (tDate < start) matchesDate = false;
-                }
-                if (matchesDate && advancedFilters.endDate) {
-                    const end = new Date(advancedFilters.endDate);
-                    if (tDate > end) matchesDate = false;
-                }
-            }
+    return result;
+  }, [transactions, dateFilter, typeFilter, walletFilter, searchQuery, advancedFilters]);
 
-            const matchesType = typeFilter === 'all' || t.type === typeFilter;
+  const groupedTransactions = useMemo(() => {
+    const grouped = {};
+    filteredTransactions.forEach((transaction) => {
+      const date = transaction.date;
+      if (!grouped[date]) grouped[date] = [];
+      grouped[date].push(transaction);
+    });
+    return grouped;
+  }, [filteredTransactions]);
 
-            const matchesWallet = walletFilter === 'all' || t.wallet_id === walletFilter;
+  const budgetStats = useMemo(() => budgets, [budgets]);
 
-            const query = searchQuery.toLowerCase();
-            const matchesSearch =
-                t.note?.toLowerCase().includes(query) ||
-                t.category?.name?.toLowerCase().includes(query) ||
-                t.amount?.toString().includes(query);
-
-            // 2. Advanced Filters (Amount & Category)
-            let matchesAdvanced = true;
-            if (advancedFilters.isActive) {
-                // Category (Multi-select)
-                if (advancedFilters.categories.length > 0) {
-                    // Check category_id or category.name (flexible)
-                    const catId = t.category_id;
-                    const catName = t.category?.name; // fallback
-                    // Assuming filter stores IDs or Names. Let's assume IDs.
-                    if (!advancedFilters.categories.includes(catId)) {
-                        matchesAdvanced = false;
-                    }
-                }
-
-                // Wallet (Multi-select) - NEW
-                if (advancedFilters.wallets.length > 0) {
-                    const wId = t.wallet_id;
-                    if (!advancedFilters.wallets.includes(wId)) {
-                        matchesAdvanced = false;
-                    }
-                }
-
-                // Amount Range
-                const amt = Number(t.amount);
-                if (matchesAdvanced && advancedFilters.minAmount && amt < Number(advancedFilters.minAmount)) {
-                    matchesAdvanced = false;
-                }
-                if (matchesAdvanced && advancedFilters.maxAmount && amt > Number(advancedFilters.maxAmount)) {
-                    matchesAdvanced = false;
-                }
-            }
-
-            return matchesDate && matchesType && matchesSearch && matchesWallet && matchesAdvanced;
+  const updateBudget = async (categoryId, limit) => {
+    const token = getToken();
+    try {
+      const existing = budgets.find((b) => b.categoryId === categoryId);
+      if (existing) {
+        await convex.mutation(api.budgets.update, { token, id: existing._id, limitAmount: limit });
+      } else {
+        await convex.mutation(api.budgets.create, {
+          token,
+          categoryId,
+          limitAmount: limit,
         });
+      }
+      await fetchData();
+    } catch (error) {
+      console.error('Error updating budget:', error);
+    }
+  };
 
-        // 3. Sorting
-        if (advancedFilters.isActive && advancedFilters.sortBy) {
-            result.sort((a, b) => {
-                const dateA = new Date(a.date);
-                const dateB = new Date(b.date);
-                const amtA = Number(a.amount);
-                const amtB = Number(b.amount);
+  const deleteBudget = async (categoryId) => {
+    const token = getToken();
+    try {
+      const existing = budgets.find(
+        (b) =>
+          b.categoryId === categoryId || b.category?.name?.toLowerCase() === categoryId
+      );
+      if (existing) {
+        await convex.mutation(api.budgets.remove, { token, id: existing._id });
+        await fetchData();
+      }
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+    }
+  };
 
-                switch (advancedFilters.sortBy) {
-                    case 'newest': return dateB - dateA; // Descending
-                    case 'oldest': return dateA - dateB; // Ascending
-                    case 'highest': return amtB - amtA;
-                    case 'lowest': return amtA - amtB;
-                    default: return 0;
-                }
-            });
-        }
+  const resetBudget = async () => {
+    const token = getToken();
+    try {
+      await convex.mutation(api.budgets.resetCycle, { token });
+      await fetchData();
+    } catch (error) {
+      console.error('Error resetting budget:', error);
+    }
+  };
 
-        return result;
-    }, [transactions, dateFilter, typeFilter, walletFilter, searchQuery, advancedFilters]);
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [isPreset, setIsPreset] = useState(false);
 
-    // Grouping Logic
-    const groupedTransactions = useMemo(() => {
-        const grouped = {};
-        filteredTransactions.forEach(transaction => {
-            const date = transaction.date;
-            if (!grouped[date]) {
-                grouped[date] = [];
-            }
-            grouped[date].push(transaction);
-        });
-        return grouped;
-    }, [filteredTransactions]);
+  const openModal = (transaction = null, preset = false) => {
+    setEditingTransaction(transaction);
+    setIsPreset(preset);
+    setIsModalOpen(true);
+  };
 
-    // Budget Stats (from Supabase)
-    const budgetStats = useMemo(() => {
-        return budgets;
-    }, [budgets]);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingTransaction(null);
+    setIsPreset(false);
+  };
 
-    const updateBudget = async (categoryId, limit) => {
-        try {
-            // Find existing budget for this category
-            const existing = budgets.find(b => b.category_id === categoryId);
-            if (existing) {
-                await budgetService.update(existing.id, { limit_amount: limit });
-            } else {
-                await budgetService.create({ category_id: categoryId, limit_amount: limit });
-            }
-            await fetchData(); // Refresh data
-        } catch (error) {
-            console.error('Error updating budget:', error);
-        }
-    };
+  const createWallet = async (name, initialBalance = 0) => {
+    const token = getToken();
+    try {
+      const w = await convex.mutation(api.wallets.create, { token, name, initialBalance });
+      setWallets((prev) => [...prev, w]);
+      return w;
+    } catch (error) {
+      console.error('Error creating wallet:', error);
+      throw error;
+    }
+  };
 
-    const deleteBudget = async (categoryId) => {
-        try {
-            const existing = budgets.find(b => b.category_id === categoryId || b.category?.name?.toLowerCase() === categoryId);
-            if (existing) {
-                await budgetService.delete(existing.id);
-                await fetchData();
-            }
-        } catch (error) {
-            console.error('Error deleting budget:', error);
-        }
-    };
+  const deleteWallet = async (id) => {
+    const token = getToken();
+    try {
+      await convex.mutation(api.wallets.remove, { token, id });
+      setWallets((prev) => prev.filter((w) => w._id !== id));
+    } catch (error) {
+      console.error('Error deleting wallet:', error);
+      throw error;
+    }
+  };
 
-    const resetBudget = async () => {
-        try {
-            await budgetService.resetCycle();
-            await fetchData();
-        } catch (error) {
-            console.error('Error resetting budget:', error);
-        }
-    };
+  const value = {
+    loading,
+    refetch: fetchData,
 
-    // Modal State
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingTransaction, setEditingTransaction] = useState(null);
-    const [isPreset, setIsPreset] = useState(false);
+    transactions,
+    addTransaction,
+    deleteTransaction,
+    editTransaction,
+    stats,
+    groupedTransactions,
+    filteredTransactions,
 
-    const openModal = (transaction = null, preset = false) => {
-        setEditingTransaction(transaction);
-        setIsPreset(preset);
-        setIsModalOpen(true);
-    };
+    addTransfer,
+    deleteTransfer,
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setEditingTransaction(null);
-        setIsPreset(false);
-    };
+    searchQuery,
+    setSearchQuery,
+    typeFilter,
+    setTypeFilter,
+    dateFilter,
+    setDateFilter,
+    walletFilter,
+    setWalletFilter,
+    advancedFilters,
+    setAdvancedFilters,
 
-    const value = {
-        // Loading
-        loading,
-        refetch: fetchData,
+    budgets,
+    budgetStats,
+    updateBudget,
+    deleteBudget,
+    resetBudget,
 
-        // Transactions
-        transactions,
-        addTransaction,
-        deleteTransaction,
-        editTransaction,
-        stats,
-        groupedTransactions,
-        filteredTransactions,
+    wallets,
+    walletStats,
+    createWallet,
+    deleteWallet,
+    categories,
 
-        // Transfer
-        addTransfer,
-        deleteTransfer,
+    isModalOpen,
+    editingTransaction,
+    isPreset,
+    openModal,
+    closeModal,
 
-        // Filters
-        searchQuery, setSearchQuery,
-        typeFilter, setTypeFilter,
-        dateFilter, setDateFilter,
-        walletFilter, setWalletFilter,
-        advancedFilters, setAdvancedFilters,
+    goals,
+  };
 
-        // Budget
-        budgets,
-        budgetStats,
-        updateBudget,
-        deleteBudget,
-        resetBudget,
-
-        // Wallets & Categories
-        wallets,
-        walletStats,
-        categories,
-
-        // Modal
-        isModalOpen,
-        editingTransaction,
-        isPreset,
-        openModal,
-        closeModal,
-
-        // Theme
-        theme,
-        toggleTheme,
-
-        // Goals
-        goals,
-    };
-
-    return (
-        <TransactionContext.Provider value={value}>
-            {children}
-        </TransactionContext.Provider>
-    );
+  return (
+    <TransactionContext.Provider value={value}>{children}</TransactionContext.Provider>
+  );
 };
